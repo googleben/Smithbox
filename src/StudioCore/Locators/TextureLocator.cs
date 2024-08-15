@@ -21,8 +21,7 @@ public static class TextureLocator
         else if (Smithbox.ProjectType == ProjectType.DES)
         {
             var mid = mapid.Substring(0, 3);
-            var paths = Directory.GetFileSystemEntries($@"{Smithbox.GameRoot}\map\{mid}\", "*.tpf.dcx");
-            foreach (var path in paths)
+            foreach (var path in Smithbox.FS.GetFileNamesMatching($"map/{mid}", @".*\.tpf\.dcx"))
             {
                 ResourceDescriptor ad = new();
                 ad.AssetPath = path;
@@ -85,9 +84,9 @@ public static class TextureLocator
         if (Smithbox.ProjectType == ProjectType.DS3)
         {
             var mid = mapid.Substring(0, 3);
-            if (File.Exists(LocatorUtils.GetAssetPath($@"map\{mid}\{mid}_envmap.tpf.dcx")))
+            if (Smithbox.FS.FileExists(LocatorUtils.GetAssetPath($@"map\{mid}\{mid}_envmap.tpf.dcx")))
             {
-                var t = TPF.Read(LocatorUtils.GetAssetPath($@"map\{mid}\{mid}_envmap.tpf.dcx"));
+                var t = TPF.Read(Smithbox.FS.GetFile(LocatorUtils.GetAssetPath($@"map\{mid}\{mid}_envmap.tpf.dcx")).GetData());
                 foreach (TPF.Texture tex in t.Textures)
                     l.Add(tex.Name);
             }

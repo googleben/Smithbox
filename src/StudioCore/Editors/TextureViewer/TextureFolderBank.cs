@@ -127,18 +127,9 @@ public static class TextureFolderBank
         {
             var searchFolderDir = $@"\asset\aet\";
 
-            if(Directory.Exists($"{Smithbox.ProjectRoot}\\{searchFolderDir}"))
+            if (Smithbox.FS.TryGetDirectory(searchFolderDir, out var sf))
             {
-                searchFolderDir = $"{Smithbox.ProjectRoot}\\{searchFolderDir}";
-            }
-            else
-            {
-                searchFolderDir = $"{Smithbox.GameRoot}\\{searchFolderDir}";
-            }
-
-            if(Directory.Exists(searchFolderDir))
-            {
-                foreach (var folder in Directory.GetDirectories(searchFolderDir))
+                foreach (var folder in sf.EnumerateDirectoryNames())
                 {
                     var folderName = folder.Substring(folder.Length - 6); // Assumes folders follow aetXXX
 
@@ -147,6 +138,7 @@ public static class TextureFolderBank
                     FindTextureFolder(folderDir, fileExt, category);
                 }
             }
+
         }
     }
 
@@ -283,13 +275,13 @@ public static class TextureFolderBank
         {
             var filePath = $"{folderDir}\\{name}{fileExt}";
 
-            if (File.Exists($"{Smithbox.ProjectRoot}\\{filePath}"))
+            if (Smithbox.ProjectFS.FileExists(filePath))
             {
-                AddTextureFolder($"{Smithbox.ProjectRoot}\\{filePath}", category, true);
+                AddTextureFolder(filePath, category, true);
             }
             else
             {
-                AddTextureFolder($"{Smithbox.GameRoot}\\{filePath}", category, false);
+                AddTextureFolder(filePath, category, false);
             }
         }
     }
@@ -323,34 +315,11 @@ public static class TextureFolderBank
     {
         HashSet<string> fileNames = new();
         List<string> ret = new();
-
-        if (Directory.Exists(Smithbox.GameRoot + fileDir))
+        foreach (var f in Smithbox.FS.GetFileNamesMatching(fileDir, $".*\\{fileExt}"))
         {
-            // ROOT
-            var paramFiles = Directory.GetFileSystemEntries(Smithbox.GameRoot + fileDir, $@"*{fileExt}").ToList();
-            foreach (var f in paramFiles)
-            {
-                var name = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(f));
-                ret.Add(name);
-                fileNames.Add(name);
-            }
-
-            // MOD
-            if (Smithbox.ProjectRoot != null && Directory.Exists(Smithbox.ProjectRoot + fileDir))
-            {
-                paramFiles = Directory.GetFileSystemEntries(Smithbox.ProjectRoot + fileDir, $@"*{fileExt}").ToList();
-
-                foreach (var f in paramFiles)
-                {
-                    var name = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(f));
-
-                    if (!fileNames.Contains(name))
-                    {
-                        ret.Add(name);
-                        fileNames.Add(name);
-                    }
-                }
-            }
+            var name = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(f));
+            ret.Add(name);
+            fileNames.Add(name);
         }
 
         return ret;

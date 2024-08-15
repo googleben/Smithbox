@@ -14,10 +14,6 @@ namespace StudioCore.Editors.ModelEditor
         public ModelEditorModelType Type { get; set; }
         public string MapID { get; set; }
 
-        public string RootBinderPath { get; set; }
-        public string ModBinderPath { get; set; }
-        public string ModBinderDirectory { get; set; }
-
         public string FlverFileName { get; set; }
         public string FlverFileExtension { get; set; }
 
@@ -36,9 +32,6 @@ namespace StudioCore.Editors.ModelEditor
             BinderDirectory = GetBinderDirectory();
             BinderExtension = GetBinderExtension();
             BinderPath = $"{BinderDirectory}{ModelName}{BinderExtension}";
-            RootBinderPath = $"{Smithbox.GameRoot}{BinderPath}";
-            ModBinderPath = $"{Smithbox.ProjectRoot}{BinderPath}";
-            ModBinderDirectory = $"{Smithbox.ProjectRoot}{BinderDirectory}";
 
             FlverFileExtension = GetFlverExtension();
             FlverFileName = $"{ModelName}{FlverFileExtension}";
@@ -55,9 +48,6 @@ namespace StudioCore.Editors.ModelEditor
             BinderDirectory = GetBinderDirectory();
             BinderExtension = GetBinderExtension();
             BinderPath = $"{BinderDirectory}{ModelName}{BinderExtension}";
-            RootBinderPath = $"{Smithbox.GameRoot}{BinderPath}";
-            ModBinderPath = $"{Smithbox.ProjectRoot}{BinderPath}";
-            ModBinderDirectory = $"{Smithbox.ProjectRoot}{BinderDirectory}";
 
             FlverFileExtension = GetFlverExtension();
             FlverFileName = $"{ModelName}{FlverFileExtension}";
@@ -65,29 +55,16 @@ namespace StudioCore.Editors.ModelEditor
 
         public bool CopyBinderToMod()
         {
-            if (!Directory.Exists(ModBinderDirectory))
-            {
-                Directory.CreateDirectory(ModBinderDirectory);
-            }
-
-            if (File.Exists(RootBinderPath))
-            {
-                if (!File.Exists(ModBinderPath))
-                {
-                    File.Copy(RootBinderPath, ModBinderPath);
-                }
-            }
-            // Mod-only model, no need to copy to mod
-            else if(File.Exists(ModBinderPath))
-            {
+            var toFs = Utils.GetFSForWrites();
+            var fromFs = Smithbox.VanillaFS;
+            if (toFs.FileExists(BinderPath))
                 return true;
-            }
-            else
+            if (!fromFs.TryGetFile(BinderPath, out var f))
             {
-                TaskLogs.AddLog($"Container path does not exist: {RootBinderPath}");
+                TaskLogs.AddLog($"Container path does not exist: {BinderPath}");
                 return false;
             }
-
+            toFs.WriteFile(BinderPath, f.GetData().ToArray());
             return true;
         }
 

@@ -15,13 +15,9 @@ public static class ParamLocator
         ResourceDescriptor ad = new();
         var path = $@"Param\{paramStr}_{mapid}";
 
-        if (Smithbox.ProjectRoot != null && File.Exists($@"{Smithbox.ProjectRoot}\{path}.param") || writemode && Smithbox.ProjectRoot != null)
+        if (Smithbox.FS.FileExists($@"{path}.param") || writemode && Smithbox.ProjectRoot != null)
         {
-            ad.AssetPath = $@"{Smithbox.ProjectRoot}\{path}.param";
-        }
-        else if (File.Exists($@"{Smithbox.GameRoot}\{path}.param"))
-        {
-            ad.AssetPath = $@"{Smithbox.GameRoot}\{path}.param";
+            ad.AssetPath = $@"{path}.param";
         }
 
         ad.AssetName = mapid + $"_{appendStr}";

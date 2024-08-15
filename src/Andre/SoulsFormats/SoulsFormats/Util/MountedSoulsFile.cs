@@ -35,7 +35,7 @@ public abstract class MountedSoulsFile<TFormat> : SoulsFile<TFormat>, IDisposabl
     /// <summary>
     /// Loads a file from the specified path, automatically decompressing it if necessary.
     /// </summary>
-    public new static TFormat Read(string path)
+    /*public new static TFormat Read(string path)
     {
         using var file = MemoryMappedFile.CreateFromFile(path, FileMode.Open, null, 0, MemoryMappedFileAccess.Read);
         var accessor = file.CreateMemoryAccessor(0, 0, MemoryMappedFileAccess.Read);
@@ -45,7 +45,7 @@ public abstract class MountedSoulsFile<TFormat> : SoulsFile<TFormat>, IDisposabl
         ret.Compression = compression;
         ret.Read(br, accessor);
         return ret;
-    }
+    }*/
     
     protected abstract void Dispose(bool disposing);
 

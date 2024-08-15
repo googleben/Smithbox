@@ -357,35 +357,22 @@ namespace StudioCore.Editors.ModelEditor
         {
             var rootFilePath = binderPath;
             var newFilePath = binderPath.Replace(oldId, newId);
-            newFilePath = newFilePath.Replace(Smithbox.GameRoot, Smithbox.ProjectRoot);
 
-            var newBinderDirectory = Path.GetDirectoryName(newFilePath);
-
-            if (!Directory.Exists(newBinderDirectory))
-            {
-                Directory.CreateDirectory(newBinderDirectory);
-            }
-
-            File.Copy(rootFilePath, newFilePath, true);
+            var toFs = Utils.GetFSForWrites();
+            toFs.WriteFile(newFilePath, Smithbox.FS.GetFile(rootFilePath).GetData().ToArray());
         }
 
         private void SaveContainer(string binderPath, string oldId, string newId, bool uppercaseReplace = false)
         {
             var newBinderPath = binderPath.Replace(oldId, newId);
-            newBinderPath = newBinderPath.Replace(Smithbox.GameRoot, Smithbox.ProjectRoot);
-
-            var newBinderDirectory = Path.GetDirectoryName(newBinderPath);
-
-            if(!Directory.Exists(newBinderDirectory))
-            {
-                Directory.CreateDirectory(newBinderDirectory);
-            }
+            var fromFs = Smithbox.FS;
+            var toFs = Utils.GetFSForWrites();
 
             if (Smithbox.ProjectType is ProjectType.DS1 or ProjectType.DS1R)
             {
                 byte[] fileBytes = null;
 
-                using (IBinder binder = BND3.Read(DCX.Decompress(binderPath)))
+                using (IBinder binder = BND3.Read(DCX.Decompress(fromFs.GetFile(binderPath).GetData())))
                 {
                     foreach (var file in binder.Files)
                     {
@@ -419,14 +406,14 @@ namespace StudioCore.Editors.ModelEditor
 
                 if (fileBytes != null)
                 {
-                    File.WriteAllBytes(newBinderPath, fileBytes);
+                    toFs.WriteFile(newBinderPath, fileBytes);
                 }
             }
             else
             {
                 byte[] fileBytes = null;
 
-                using (IBinder binder = BND4.Read(DCX.Decompress(binderPath)))
+                using (IBinder binder = BND4.Read(DCX.Decompress(fromFs.GetFile(binderPath).GetData())))
                 {
                     foreach (var file in binder.Files)
                     {
@@ -468,7 +455,7 @@ namespace StudioCore.Editors.ModelEditor
 
                 if (fileBytes != null)
                 {
-                    File.WriteAllBytes(newBinderPath, fileBytes);
+                    toFs.WriteFile(newBinderPath, fileBytes);
                 }
             }
         }

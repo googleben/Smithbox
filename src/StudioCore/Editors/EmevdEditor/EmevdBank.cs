@@ -84,27 +84,9 @@ public static class EmevdBank
             paramExt = @".emevd";
         }
 
-        var assetRoot = $@"{Smithbox.GameRoot}\{paramDir}\{info.Name}{paramExt}";
-        var assetMod = $@"{Smithbox.ProjectRoot}\{paramDir}\{info.Name}{paramExt}";
+        var assetRoot = $@"{paramDir}\{info.Name}{paramExt}";
 
-        // Add drawparam folder if it does not exist in GameModDirectory
-        if (!Directory.Exists($"{Smithbox.ProjectRoot}\\{paramDir}\\"))
-        {
-            Directory.CreateDirectory($"{Smithbox.ProjectRoot}\\{paramDir}\\");
-        }
-
-        // Make a backup of the original file if a mod path doesn't exist
-        if (Smithbox.ProjectRoot == null && !File.Exists($@"{assetRoot}.bak") && File.Exists(assetRoot))
-        {
-            File.Copy(assetRoot, $@"{assetRoot}.bak", true);
-        }
-
-        if (fileBytes != null)
-        {
-            // Write to GameModDirectory
-            File.WriteAllBytes(assetMod, fileBytes);
-            //TaskLogs.AddLog($"Saved at: {assetMod}");
-        }
+        Utils.TrySaveFile(assetRoot, fileBytes);
     }
 
     public static void LoadEventScripts()
@@ -128,17 +110,7 @@ public static class EmevdBank
         foreach (var name in paramNames)
         {
             var filePath = $"{paramDir}\\{name}{paramExt}";
-
-            if (File.Exists($"{Smithbox.ProjectRoot}\\{filePath}"))
-            {
-                LoadEventScript($"{Smithbox.ProjectRoot}\\{filePath}");
-                //TaskLogs.AddLog($"Loaded from GameModDirectory: {filePath}");
-            }
-            else
-            {
-                LoadEventScript($"{Smithbox.GameRoot}\\{filePath}");
-                //TaskLogs.AddLog($"Loaded from GameRootDirectory: {filePath}");
-            }
+            LoadEventScript(filePath);
         }
 
         IsLoaded = true;
@@ -168,7 +140,7 @@ public static class EmevdBank
 
         try
         {
-            eventScript = EMEVD.Read(DCX.Decompress(path));
+            eventScript = EMEVD.Read(DCX.Decompress(Smithbox.FS.GetFile(path).GetData()));
             ScriptBank.Add(eventInfo, eventScript);
         }
         catch (Exception ex)

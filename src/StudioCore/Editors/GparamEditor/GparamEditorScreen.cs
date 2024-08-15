@@ -1170,12 +1170,10 @@ public class GparamEditorScreen : EditorScreen
         string filePath = info.Path;
         string baseFileName = info.Name;
 
-        filePath = filePath.Replace($"{Smithbox.GameRoot}", $"{Smithbox.ProjectRoot}");
-
-        if (File.Exists(filePath))
+        if (Smithbox.ProjectFS.FileExists(filePath))
         {
+            Smithbox.ProjectFS.Delete(filePath);
             TaskLogs.AddLog($"{baseFileName} was removed from your project.");
-            File.Delete(filePath);
         }
         else
         {
@@ -1197,12 +1195,10 @@ public class GparamEditorScreen : EditorScreen
 
         string newFilePath = filePath.Replace(baseFileName, tryFileName);
 
-        // If the original is in the root dir, change the path to mod
-        newFilePath = newFilePath.Replace($"{Smithbox.GameRoot}", $"{Smithbox.ProjectRoot}");
 
-        if (!File.Exists(newFilePath))
+        if (!Smithbox.ProjectFS.FileExists(newFilePath))
         {
-            File.Copy(filePath, newFilePath);
+            Smithbox.ProjectFS.WriteFile(newFilePath, Smithbox.FS.GetFile(filePath).GetData().ToArray());
         }
         else
         {
@@ -1227,12 +1223,9 @@ public class GparamEditorScreen : EditorScreen
             string currentfileName = CreateDuplicateFileName(tryFileName);
             string newFilePath = filePath.Replace(baseFileName, currentfileName);
 
-            // If the original is in the root dir, change the path to mod
-            newFilePath = newFilePath.Replace($"{Smithbox.GameRoot}", $"{Smithbox.ProjectRoot}");
-
-            if (!File.Exists(newFilePath))
+            if (!Smithbox.ProjectFS.FileExists(newFilePath))
             {
-                File.Copy(filePath, newFilePath);
+                Smithbox.ProjectFS.WriteFile(newFilePath, Smithbox.FS.GetFile(filePath).GetData().ToArray());
                 isValidFile = true;
             }
             else

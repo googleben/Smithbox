@@ -331,11 +331,12 @@ public class ActionHandler
             return;
         }
 
-        ParamBank.LoadAuxBank(targetRegulationPath, null, null);
+        //TODO
+        /*ParamBank.LoadAuxBank(targetRegulationPath, null, null);
         if (Smithbox.ProjectType is ProjectType.DS2S or ProjectType.DS2)
         {
             ParamBank.LoadAuxBank(targetRegulationPath, targetLooseParamPath, targetEnemyParamPath);
-        }
+        }*/
 
         var auxBank = ParamBank.AuxBanks.First();
 

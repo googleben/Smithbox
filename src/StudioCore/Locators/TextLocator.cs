@@ -17,29 +17,35 @@ public static class TextLocator
     public static Dictionary<string, string> GetMsgLanguages()
     {
         Dictionary<string, string> dict = new();
-        List<string> folders = new();
         try
         {
+            string rootPath;
+            List<string> folders;
             if (Smithbox.ProjectType == ProjectType.DES)
             {
-                folders = Directory.GetDirectories(Smithbox.GameRoot + @"\msg").ToList();
+                rootPath = "msg";
+                folders = Smithbox.FS.GetDirectory("msg").EnumerateDirectoryNames().ToList();
                 // Japanese uses root directory
-                if (File.Exists(Smithbox.GameRoot + @"\msg\menu.msgbnd.dcx") ||
-                    File.Exists(Smithbox.GameRoot + @"\msg\item.msgbnd.dcx"))
+                if (Smithbox.FS.FileExists(@"\msg\menu.msgbnd.dcx") ||
+                    Smithbox.FS.FileExists(@"\msg\item.msgbnd.dcx"))
                     dict.Add("Japanese", "");
             }
             else if (Smithbox.ProjectType == ProjectType.DS2S || Smithbox.ProjectType == ProjectType.DS2)
-                folders = Directory.GetDirectories(Smithbox.GameRoot + @"\menu\text").ToList();
+            {
+                rootPath = "menu/text";
+                folders = Smithbox.FS.GetDirectory("menu/text").EnumerateDirectoryNames().ToList();
+            }
             else
             {
+                rootPath = "msg";
                 // Exclude folders that don't have typical msgbnds
-                folders = Directory.GetDirectories(Smithbox.GameRoot + @"\msg")
-                    .Where(x => !"common,as,eu,jp,na,uk,japanese".Contains(x.Split("\\").Last())).ToList();
+                folders = Smithbox.FS.GetDirectory("msg").EnumerateDirectoryNames()
+                    .Where(x => !"common,as,eu,jp,na,uk,japanese".Contains(x)).ToList();
             }
 
             foreach (var path in folders)
             {
-                dict.Add(path.Split("\\").Last(), path);
+                dict.Add(path, Path.Combine(rootPath, path));
             }
         }
         catch (Exception e) when (e is DirectoryNotFoundException or FileNotFoundException)
@@ -74,7 +80,7 @@ public static class TextLocator
         {
             path = $@"msg\{langFolder}\{msgBndType}.msgbnd.dcx";
             // Demon's Souls has msgbnds directly in the msg folder
-            if (!File.Exists($@"{Smithbox.GameRoot}\{path}"))
+            if (!Smithbox.FS.FileExists(path))
                 path = $@"msg\{msgBndType}.msgbnd.dcx";
         }
         else if (Smithbox.ProjectType == ProjectType.DS1)
@@ -90,7 +96,7 @@ public static class TextLocator
             // DS2 does not have an msgbnd but loose fmg files instead
             path = $@"menu\text\{langFolder}";
             ResourceDescriptor ad2 = new();
-            ad2.AssetPath = writemode ? path : $@"{Smithbox.GameRoot}\{path}";
+            ad2.AssetPath = path;
             //TODO: doesn't support project files
             return ad2;
         }
@@ -109,11 +115,8 @@ public static class TextLocator
             return ad;
         }
 
-        if (Smithbox.ProjectRoot != null && File.Exists($@"{Smithbox.ProjectRoot}\{path}") ||
-            writemode && Smithbox.ProjectRoot != null)
-            ad.AssetPath = $@"{Smithbox.ProjectRoot}\{path}";
-        else if (File.Exists($@"{Smithbox.GameRoot}\{path}"))
-            ad.AssetPath = $@"{Smithbox.GameRoot}\{path}";
+        if (Smithbox.FS.FileExists(path))
+            ad.AssetPath = path;
 
         return ad;
     }
@@ -132,7 +135,7 @@ public static class TextLocator
             path = $@"msg\{langFolder}\{msgBndType}{release}.msgbnd.dcx";
         }
 
-        ad.AssetPath = $@"{Smithbox.GameRoot}\{path}";
+        ad.AssetPath = $@"{path}";
         return ad;
     }
 
@@ -150,7 +153,7 @@ public static class TextLocator
             path = $@"msg\{langFolder}\{msgBndType}{release}.msgbnd.dcx";
         }
 
-        ad.AssetPath = $@"{Smithbox.ProjectRoot}\{path}";
+        ad.AssetPath = $@"{path}";
         return ad;
     }
 }

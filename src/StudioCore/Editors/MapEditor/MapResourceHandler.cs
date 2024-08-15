@@ -57,35 +57,35 @@ namespace StudioCore.Editors.MapEditor
         {
             if (Smithbox.ProjectType == ProjectType.DS3)
             {
-                Msb = MSB3.Read(MapResource.AssetPath);
+                Msb = MSB3.Read(Smithbox.FS.GetFile(MapResource.AssetPath).GetData());
             }
             else if (Smithbox.ProjectType == ProjectType.SDT)
             {
-                Msb = MSBS.Read(MapResource.AssetPath);
+                Msb = MSBS.Read(Smithbox.FS.GetFile(MapResource.AssetPath).GetData());
             }
             else if (Smithbox.ProjectType == ProjectType.ER)
             {
-                Msb = MSBE.Read(MapResource.AssetPath);
+                Msb = MSBE.Read(Smithbox.FS.GetFile(MapResource.AssetPath).GetData());
             }
             else if (Smithbox.ProjectType == ProjectType.AC6)
             {
-                Msb = MSB_AC6.Read(MapResource.AssetPath);
+                Msb = MSB_AC6.Read(Smithbox.FS.GetFile(MapResource.AssetPath).GetData());
             }
             else if (Smithbox.ProjectType == ProjectType.DS2S || Smithbox.ProjectType == ProjectType.DS2)
             {
-                Msb = MSB2.Read(MapResource.AssetPath);
+                Msb = MSB2.Read(Smithbox.FS.GetFile(MapResource.AssetPath).GetData());
             }
             else if (Smithbox.ProjectType == ProjectType.BB)
             {
-                Msb = MSBB.Read(MapResource.AssetPath);
+                Msb = MSBB.Read(Smithbox.FS.GetFile(MapResource.AssetPath).GetData());
             }
             else if (Smithbox.ProjectType == ProjectType.DES)
             {
-                Msb = MSBD.Read(MapResource.AssetPath);
+                Msb = MSBD.Read(Smithbox.FS.GetFile(MapResource.AssetPath).GetData());
             }
             else
             {
-                Msb = MSB1.Read(MapResource.AssetPath);
+                Msb = MSB1.Read(Smithbox.FS.GetFile(MapResource.AssetPath).GetData());
             }
         }
 
@@ -269,7 +269,7 @@ namespace StudioCore.Editors.MapEditor
                 }
                 else
                 {
-                    btl = BTL.Read(ad.AssetPath);
+                    btl = BTL.Read(Smithbox.FS.GetFile(ad.AssetPath).GetData());
                 }
 
                 return btl;
@@ -491,7 +491,7 @@ namespace StudioCore.Editors.MapEditor
                 ResourceDescriptor nvaasset = MapLocator.GetMapNVA(AdjustedMapID);
                 if (nvaasset.AssetPath != null)
                 {
-                    var nva = NVA.Read(nvaasset.AssetPath);
+                    var nva = NVA.Read(Smithbox.FS.GetFile(nvaasset.AssetPath).GetData());
                     foreach (NVA.Navmesh currentNav in nva.Navmeshes)
                     {
                         // TODO2: set parent to MapOffset

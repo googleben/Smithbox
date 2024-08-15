@@ -667,7 +667,7 @@ public static class ParamReferenceUtils
                 {
                     CurrentMapID = rowMapId;
                     var mapPath = MapLocator.GetMapMSB(rowMapId);
-                    CurrentPeekMap_DS1 = MSB1.Read(mapPath.AssetPath);
+                    CurrentPeekMap_DS1 = MSB1.Read(Smithbox.FS.GetFile(mapPath.AssetPath).GetData());
                 }
 
                 if (CurrentPeekMap_DS1 == null)
@@ -751,7 +751,7 @@ public static class ParamReferenceUtils
                 {
                     CurrentMapID = rowMapId;
                     var mapPath = MapLocator.GetMapMSB(rowMapId);
-                    CurrentPeekMap_DS3 = MSB3.Read(mapPath.AssetPath);
+                    CurrentPeekMap_DS3 = MSB3.Read(Smithbox.FS.GetFile(mapPath.AssetPath).GetData());
                 }
 
                 if (CurrentPeekMap_DS3 == null)
@@ -833,7 +833,7 @@ public static class ParamReferenceUtils
                 {
                     CurrentMapID = rowMapId;
                     var mapPath = MapLocator.GetMapMSB(rowMapId);
-                    CurrentPeekMap_SDT = MSBS.Read(mapPath.AssetPath);
+                    CurrentPeekMap_SDT = MSBS.Read(Smithbox.FS.GetFile(mapPath.AssetPath).GetData());
                 }
 
                 if (CurrentPeekMap_SDT == null)
@@ -914,7 +914,7 @@ public static class ParamReferenceUtils
                 {
                     CurrentMapID = rowMapId;
                     var mapPath = MapLocator.GetMapMSB(rowMapId);
-                    CurrentPeekMap_ER = MSBE.Read(mapPath.AssetPath);
+                    CurrentPeekMap_ER = MSBE.Read(Smithbox.FS.GetFile(mapPath.AssetPath).GetData());
                 }
 
                 if (CurrentPeekMap_ER == null)
@@ -987,7 +987,7 @@ public static class ParamReferenceUtils
                 {
                     CurrentMapID = rowMapId;
                     var mapPath = MapLocator.GetMapMSB(rowMapId);
-                    CurrentPeekMap_AC6 = MSB_AC6.Read(mapPath.AssetPath);
+                    CurrentPeekMap_AC6 = MSB_AC6.Read(Smithbox.FS.GetFile(mapPath.AssetPath).GetData());
                 }
 
                 if (CurrentPeekMap_AC6 == null)

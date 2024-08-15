@@ -151,7 +151,7 @@ namespace StudioCore.Editors.ModelEditor
 
             if (modelType == ModelEditorModelType.Loose)
             {
-                CurrentFLVER = FLVER2.Read(CurrentFLVERInfo.LoosePath);
+                CurrentFLVER = FLVER2.Read(Smithbox.FS.GetFile(CurrentFLVERInfo.LoosePath).GetData());
             }
             else
             {
@@ -161,12 +161,12 @@ namespace StudioCore.Editors.ModelEditor
                     {
                         if (modelType == ModelEditorModelType.MapPiece)
                         {
-                            CurrentFLVER = FLVER2.Read(modelAsset.AssetPath);
+                            CurrentFLVER = FLVER2.Read(Smithbox.FS.GetFile(modelAsset.AssetPath).GetData());
                         }
                         else
                         {
                             // BND3
-                            BND3Reader reader = new BND3Reader(modelAsset.AssetPath);
+                            BND3Reader reader = new BND3Reader(Smithbox.FS.GetFile(modelAsset.AssetPath).GetData());
                             foreach (var file in reader.Files)
                             {
                                 var fileName = file.Name.ToLower();
@@ -189,7 +189,9 @@ namespace StudioCore.Editors.ModelEditor
                         {
                             var bhdPath = modelAsset.AssetPath;
                             var bdtPath = modelAsset.AssetPath.Replace("bhd", "bdt");
-                            BXF4Reader reader = new BXF4Reader(bhdPath, bdtPath);
+                            var bhd = Smithbox.FS.ReadFile(bhdPath).Value;
+                            var bdt = Smithbox.FS.ReadFile(bdtPath).Value;
+                            BXF4Reader reader = new BXF4Reader(bhd, bdt);
                             foreach (var file in reader.Files)
                             {
                                 var fileName = file.Name.ToLower();
@@ -209,7 +211,7 @@ namespace StudioCore.Editors.ModelEditor
                         else
                         {
                             // BND4
-                            BND4Reader reader = new BND4Reader(modelAsset.AssetPath);
+                            BND4Reader reader = new BND4Reader(Smithbox.FS.ReadFile(modelAsset.AssetPath).Value);
                             foreach (var file in reader.Files)
                             {
                                 var fileName = file.Name.ToLower();
@@ -264,7 +266,7 @@ namespace StudioCore.Editors.ModelEditor
                 {
                     if (Smithbox.ProjectType is ProjectType.ER)
                     {
-                        BND4Reader reader = new BND4Reader(collisionAsset.AssetPath);
+                        BND4Reader reader = new BND4Reader(Smithbox.FS.ReadFile(collisionAsset.AssetPath).Value);
 
                         foreach (var file in reader.Files)
                         {
@@ -302,7 +304,7 @@ namespace StudioCore.Editors.ModelEditor
                 {
                     if (Smithbox.ProjectType is ProjectType.ER)
                     {
-                        BND4Reader reader = new BND4Reader(collisionAsset.AssetPath);
+                        BND4Reader reader = new BND4Reader(Smithbox.FS.ReadFile(collisionAsset.AssetPath).Value);
 
                         foreach (var file in reader.Files)
                         {
@@ -620,10 +622,7 @@ namespace StudioCore.Editors.ModelEditor
 
             byte[] fileBytes = null;
 
-            // Backup container file
-            File.Copy(info.ModBinderPath, $@"{info.ModBinderPath}.bak", true);
-
-            using (IBinder binder = BND4.Read(DCX.Decompress(info.ModBinderPath)))
+            using (IBinder binder = BND4.Read(DCX.Decompress(Smithbox.FS.GetFile(info.BinderPath).GetData())))
             {
                 foreach (var file in binder.Files)
                 {
@@ -664,17 +663,17 @@ namespace StudioCore.Editors.ModelEditor
                         return;
                 }
             }
+            
 
             if (fileBytes != null)
             {
                 try
                 {
-                    File.WriteAllBytes(info.ModBinderPath, fileBytes);
-                    TaskLogs.AddLog($"Saved model at: {info.ModBinderPath}");
+                    Utils.TrySaveFile(info.BinderPath, fileBytes);
                 }
                 catch (Exception ex)
                 {
-                    TaskLogs.AddLog($"Failed to save model: {info.ModBinderPath}\n{ex.ToString()}");
+                    TaskLogs.AddLog($"Failed to save model: {info.BinderPath}\n{ex.ToString()}");
                 }
             }
         }
@@ -687,10 +686,7 @@ namespace StudioCore.Editors.ModelEditor
             FlverModelInfo info = CurrentFLVERInfo;
             byte[] fileBytes = null;
 
-            // Backup container file
-            File.Copy(info.ModBinderPath, $@"{info.ModBinderPath}.bak", true);
-
-            using (IBinder binder = BND3.Read(DCX.Decompress(info.ModBinderPath)))
+            using (IBinder binder = BND3.Read(DCX.Decompress(Smithbox.FS.GetFile(info.BinderPath).GetData())))
             {
                 foreach (var file in binder.Files)
                 {
@@ -728,12 +724,11 @@ namespace StudioCore.Editors.ModelEditor
             {
                 try
                 {
-                    File.WriteAllBytes(info.ModBinderPath, fileBytes);
-                    TaskLogs.AddLog($"Saved model at: {info.ModBinderPath}");
+                    Utils.TrySaveFile(info.BinderPath, fileBytes);
                 }
                 catch (Exception ex)
                 {
-                    TaskLogs.AddLog($"Failed to save model: {info.ModBinderPath}\n{ex.ToString()}");
+                    TaskLogs.AddLog($"Failed to save model: {info.BinderPath}\n{ex.ToString()}");
                 }
             }
         }

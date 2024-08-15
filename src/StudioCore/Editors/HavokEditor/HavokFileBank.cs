@@ -92,15 +92,9 @@ public static class HavokFileBank
                 return;
         }
 
-        if (Smithbox.ProjectRoot == null && !File.Exists($@"{info.ModBinderPath}.bak") && File.Exists(info.ModBinderPath))
-        {
-            File.Copy(info.ModBinderPath, $@"{info.ModBinderPath}.bak", true);
-        }
-
-        if (binderBytes != null)
-        {
-            File.WriteAllBytes(info.ModBinderPath, binderBytes);
-            TaskLogs.AddLog($"Saved at: {info.ModBinderPath}");
-        }
+        Utils.TrySaveFile(info.BinderPath, binderBytes);
+        
+        TaskLogs.AddLog($"Saved at: {info.BinderPath}");
+        
     }
 }

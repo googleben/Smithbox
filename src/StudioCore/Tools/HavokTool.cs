@@ -30,13 +30,16 @@ public static class HavokTool
         var testCompendium = $"{testContainer}.compendium.dcx";
         var testFile = $"{type}{mapId.Substring(1)}_001000.hkx.dcx";
 
-        var bdtPath = $"{Smithbox.GameRoot}\\map\\{mapId.Substring(0, 3)}\\{mapId}\\{testbdt}";
-        var bhdPath = $"{Smithbox.GameRoot}\\map\\{mapId.Substring(0, 3)}\\{mapId}\\{testbhd}";
+        var bdtPath = $"map\\{mapId.Substring(0, 3)}\\{mapId}\\{testbdt}";
+        var bhdPath = $"map\\{mapId.Substring(0, 3)}\\{mapId}\\{testbhd}";
 
         Memory<byte> testFileBytes = null;
         Memory<byte> compendiumBytes = null;
 
-        BXF4Reader reader = new BXF4Reader(bhdPath, bdtPath);
+        var bhd = Smithbox.FS.ReadFile(bhdPath).Value;
+        var bdt = Smithbox.FS.ReadFile(bdtPath).Value;
+
+        BXF4Reader reader = new BXF4Reader(bhd, bdt);
         foreach (var file in reader.Files)
         {
             BinderFileHeader f = file;

@@ -94,16 +94,8 @@ public class TextureViewerScreen : EditorScreen, IResourceEventListener
         if (Smithbox.ProjectType is ProjectType.ER or ProjectType.AC6)
         {
             string sourcePath = $@"menu\hi\01_common.sblytbnd.dcx";
-            if(File.Exists($@"{Smithbox.ProjectRoot}\{sourcePath}"))
-            {
-                sourcePath = $@"{Smithbox.ProjectRoot}\{sourcePath}";
-            }
-            else
-            {
-                sourcePath = $@"{Smithbox.GameRoot}\{sourcePath}";
-            }
 
-            if (File.Exists(sourcePath))
+            if (Smithbox.FS.FileExists(sourcePath))
             {
                 shoeboxContainer = new ShoeboxLayoutContainer(sourcePath);
                 shoeboxContainer.BuildTextureDictionary();
@@ -520,7 +512,7 @@ public class TextureViewerScreen : EditorScreen, IResourceEventListener
 
                 ResourceManager.AddResourceListener<TextureResource>(ad.AssetVirtualPath, this, AccessLevel.AccessGPUOptimizedOnly);
 
-                _selectedTextureContainer.Textures = TPF.Read(info.Path).Textures;
+                _selectedTextureContainer.Textures = TPF.Read(Smithbox.FS.GetFile(info.Path).GetData()).Textures;
             }
 
             // Load bnd archive
@@ -548,7 +540,7 @@ public class TextureViewerScreen : EditorScreen, IResourceEventListener
     {
         List<TPF.Texture> textures = new List<TPF.Texture>();
 
-        if (path == null || !File.Exists(path))
+        if (path == null || !Smithbox.FS.FileExists(path))
         {
             return textures;
         }

@@ -279,6 +279,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\Andre\Andre.IO\Andre.IO.csproj" />
     <ProjectReference Include="..\HKLib.Reflection\HKLib.Reflection.csproj" />
     <ProjectReference Include="..\HKLib.Serialization\HKLib.Serialization.csproj" />
     <ProjectReference Include="..\HKLib\HKLib.csproj" />

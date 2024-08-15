@@ -84,35 +84,23 @@ public static class LocatorUtils
         {
             HashSet<string> fileList = new();
             List<string> ret = new();
-
-            // ROOT
-            var paramFiles = Directory.GetFileSystemEntries(Smithbox.GameRoot + paramDir, $@"*{paramExt}")
-                .ToList();
-            foreach (var f in paramFiles)
+            foreach (var f in Smithbox.VanillaFS.GetFileNamesMatching(paramDir, $".*\\{paramExt}"))
             {
                 var name = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(f));
                 ret.Add(name);
                 fileList.Add(name);
             }
 
-            // PROJECT
-            if (!ignoreProject)
+            if (ignoreProject)
+                return ret;
+            
+            foreach (var f in Smithbox.ProjectFS.GetFileNamesMatching(paramDir, $".*\\{paramExt}"))
             {
-                if (Smithbox.ProjectRoot != null && Directory.Exists(Smithbox.ProjectRoot + paramDir))
-                {
-                    paramFiles = Directory.GetFileSystemEntries(Smithbox.ProjectRoot + paramDir, $@"*{paramExt}").ToList();
-                    foreach (var f in paramFiles)
-                    {
-                        var name = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(f));
-                        if (!fileList.Contains(name))
-                        {
-                            ret.Add(name);
-                            fileList.Add(name);
-                        }
-                    }
-                }
+                var name = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(f));
+                ret.Add(name);
+                fileList.Add(name);
             }
-
+            
             return ret;
         }
         catch (DirectoryNotFoundException e)
@@ -124,6 +112,8 @@ public static class LocatorUtils
 
     public static string GetAssetPath(string relpath)
     {
+        return relpath;
+        //TODO
         if (Smithbox.ProjectRoot != null)
         {
             var modpath = $@"{Smithbox.ProjectRoot}\{relpath}";
@@ -172,6 +162,8 @@ public static class LocatorUtils
 
     public static bool FileExists(string relpath)
     {
+        return Smithbox.FS.FileExists(relpath);
+        //TODO
         if (Smithbox.ProjectRoot != null && File.Exists($@"{Smithbox.ProjectRoot}\{relpath}"))
             return true;
 
@@ -183,6 +175,8 @@ public static class LocatorUtils
 
     public static string GetOverridenFilePath(string relpath)
     {
+        return Smithbox.FS.FileExists(relpath) ? relpath : null;
+        //TODO
         var rootPath = $@"{Smithbox.GameRoot}\{relpath}";
         var modPath = $@"{Smithbox.ProjectRoot}\{relpath}";
 

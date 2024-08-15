@@ -87,7 +87,7 @@ public static class ResourceManager
         {
             try
             {
-                action._tpf = TPF.Read(action._filePath);
+                action._tpf = TPF.Read(Smithbox.FS.GetFile(action._filePath).GetData());
             }
             catch (Exception e)
             {
@@ -225,7 +225,7 @@ public static class ResourceManager
 
     public static BinderReader InstantiateBinderReaderForFile(string filePath, ProjectType type)
     {
-        if (filePath == null || !File.Exists(filePath))
+        if (filePath == null || !Smithbox.FS.FileExists(filePath))
         {
             return null;
         }
@@ -234,18 +234,22 @@ public static class ResourceManager
         {
             if (filePath.ToUpper().EndsWith("BHD"))
             {
-                return new BXF3Reader(filePath, filePath.Substring(0, filePath.Length - 3) + "bdt");
+                var otherPath = filePath[..^3] + "bdt";
+                return new BXF3Reader(Smithbox.FS.GetFile(filePath).GetData(),
+                    Smithbox.FS.GetFile(otherPath).GetData());
             }
 
-            return new BND3Reader(filePath);
+            return new BND3Reader(Smithbox.FS.GetFile(filePath).GetData());
         }
 
         if (filePath.ToUpper().EndsWith("BHD"))
         {
-            return new BXF4Reader(filePath, filePath.Substring(0, filePath.Length - 3) + "bdt");
+            var otherPath = filePath[..^3] + "bdt";
+            return new BXF4Reader(Smithbox.FS.GetFile(filePath).GetData(),
+                Smithbox.FS.GetFile(otherPath).GetData());
         }
 
-        return new BND4Reader(filePath);
+        return new BND4Reader(Smithbox.FS.GetFile(filePath).GetData());
     }
 
     public static void UnloadUnusedResources()
@@ -613,7 +617,8 @@ public static class ResourceManager
             PersistentTPF = isPersistentTPF;
         }
 
-        public void ProcessBinder()
+        public void 
+            ProcessBinder()
         {
             // Read binder
             if (Binder == null)
@@ -1026,10 +1031,10 @@ public static class ResourceManager
                     string path = null;
                     if (texpath.StartsWith("map/tex"))
                     {
-                        path = $@"{Smithbox.GameRoot}\map\tx\{Path.GetFileName(texpath)}.tpf";
+                        path = $@"map\tx\{Path.GetFileName(texpath)}.tpf";
                     }
 
-                    if (path != null && File.Exists(path))
+                    if (path != null && Smithbox.FS.FileExists(path))
                     {
                         _job.AddLoadTPFResources(new LoadTPFResourcesAction(_job,
                             Path.GetDirectoryName(r.Key).Replace('\\', '/'),
@@ -1110,7 +1115,7 @@ public static class ResourceManager
                         }
                     }
 
-                    if (path != null && File.Exists(path))
+                    if (path != null && Smithbox.FS.FileExists(path))
                     {
                         _job.AddLoadTPFResources(new LoadTPFResourcesAction(_job,
                             Path.GetDirectoryName(texpath).Replace('\\', '/'), path,

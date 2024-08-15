@@ -42,14 +42,14 @@ public static class FmgUpdater
         ResourceDescriptor baseDlcMenuMsgPath = TextLocator.GetMsgbnd_Vanilla_Upgrader("menu", "_dlc02", langFolder);
 
         // If the asset paths do not exist, return early to stop a failed msgbnd load
-        if (!File.Exists(projectItemMsgPath.AssetPath) ||
-            !File.Exists(projectDlcItemMsgPath.AssetPath) ||
-            !File.Exists(baseItemMsgPath.AssetPath) ||
-            !File.Exists(baseDlcItemMsgPath.AssetPath) ||
-            !File.Exists(projectMenuMsgPath.AssetPath) ||
-            !File.Exists(projectDlcMenuMsgPath.AssetPath) ||
-            !File.Exists(baseMenuMsgPath.AssetPath) ||
-            !File.Exists(baseDlcMenuMsgPath.AssetPath))
+        if (!Smithbox.FS.FileExists(projectItemMsgPath.AssetPath) ||
+            !Smithbox.FS.FileExists(projectDlcItemMsgPath.AssetPath) ||
+            !Smithbox.FS.FileExists(baseItemMsgPath.AssetPath) ||
+            !Smithbox.FS.FileExists(baseDlcItemMsgPath.AssetPath) ||
+            !Smithbox.FS.FileExists(projectMenuMsgPath.AssetPath) ||
+            !Smithbox.FS.FileExists(projectDlcMenuMsgPath.AssetPath) ||
+            !Smithbox.FS.FileExists(baseMenuMsgPath.AssetPath) ||
+            !Smithbox.FS.FileExists(baseDlcMenuMsgPath.AssetPath))
             return;
 
         FMGFileSet projectItemMsgBnd = new FMGFileSet(FmgFileCategory.Item);

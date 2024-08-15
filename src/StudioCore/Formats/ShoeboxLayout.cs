@@ -22,7 +22,7 @@ public class ShoeboxLayoutContainer
     {
         try
         {
-            var binder = BND4.Read(filepath);
+            var binder = BND4.Read(Smithbox.FS.GetFile(filepath).GetData());
 
             ContainerName = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(filepath));
 
@@ -84,7 +84,7 @@ public class ShoeboxLayout
         }
     }
 
-    public ShoeboxLayout(string filepath)
+    /*public ShoeboxLayout(string filepath)
     {
         FileName = Path.GetFileNameWithoutExtension(filepath);
         byte[] data = File.ReadAllBytes(filepath);
@@ -98,7 +98,7 @@ public class ShoeboxLayout
         {
             TextureAtlases.Add(new TextureAtlas(node));
         }
-    }
+    }*/
 }
 
 public class TextureAtlas

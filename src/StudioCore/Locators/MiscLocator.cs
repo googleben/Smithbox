@@ -1,4 +1,5 @@
-﻿using DotNext;
+﻿using Andre.IO.VFS;
+using DotNext;
 using StudioCore.Core;
 using System;
 using System.Collections.Generic;
@@ -90,8 +91,8 @@ public static class MiscLocator
 
         List<string> ret = new List<string>();
 
-        var searchDir = $"{Smithbox.GameRoot}\\{paramDir}";
-        foreach (var folderPath in Directory.EnumerateDirectories(searchDir))
+        var searchDir = paramDir;
+        foreach (var folderPath in Smithbox.FS.GetDirectory(searchDir).EnumerateDirectoryNames())
         {
             var folderName = folderPath.Substring(folderPath.Length - 6);
 

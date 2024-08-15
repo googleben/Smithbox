@@ -73,10 +73,10 @@ namespace SoulsFormats
         /// <summary>
         /// Decompress a DCX file from the specified path.
         /// </summary>
-        public static Memory<byte> Decompress(string path)
+       /* public static Memory<byte> Decompress(string path)
         {
             return Decompress(path, out _);
-        }
+        }*/
         #endregion
 
         internal static Memory<byte> Decompress(BinaryReaderEx br, out Type type)

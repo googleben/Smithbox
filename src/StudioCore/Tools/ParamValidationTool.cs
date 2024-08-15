@@ -95,11 +95,36 @@ namespace StudioCore.Tools
         {
             // Read params from regulation.bin via SF PARAM impl
             _paramdefs = ParamBank._paramdefs;
+            
+            // DS3
+            if (Smithbox.ProjectType == ProjectType.DS3)
+            {
+                var path = "Data0.bdt";
 
-            var dir = Smithbox.GameRoot;
-            var mod = Smithbox.ProjectRoot;
+                try
+                {
+                    using BND4 bnd = SFUtil.DecryptDS3Regulation(Smithbox.FS.ReadFile(path)?.ToArray());
+                    LoadParamFromBinder(bnd, ref _params, out _paramVersion, true);
+                }
+                catch (Exception e)
+                {
+                    PlatformUtils.Instance.MessageBox($"Param Load failed: {path}: {e.Message}", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
 
-            var param = $@"{mod}\regulation.bin";
+                return;
+            }
+
+            Memory<byte> param;
+            
+            try
+            {
+                param = Smithbox.FS.ReadFile("regulation.bin").Value;
+            }
+            catch (Exception e)
+            {
+                PlatformUtils.Instance.MessageBox($"Param Load failed: {$@"regulation.bin"}: {e.Message}", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                return;
+            }
 
             // DES, DS1, DS1R
             if (Smithbox.ProjectType == ProjectType.DES || Smithbox.ProjectType == ProjectType.DS1 || Smithbox.ProjectType == ProjectType.DS1R)
@@ -120,7 +145,7 @@ namespace StudioCore.Tools
             {
                 try
                 {
-                    using BND4 bnd = SFUtil.DecryptDS2Regulation(param);
+                    using BND4 bnd = SFUtil.DecryptDS2Regulation(param.ToArray());
                     LoadParamFromBinder(bnd, ref _params, out _paramVersion, true);
                 }
                 catch (Exception e)
@@ -129,21 +154,7 @@ namespace StudioCore.Tools
                 }
             }
 
-            // DS3
-            if (Smithbox.ProjectType == ProjectType.DS3)
-            {
-                param = $@"{mod}\Data0.bdt";
-
-                try
-                {
-                    using BND4 bnd = SFUtil.DecryptDS3Regulation(param);
-                    LoadParamFromBinder(bnd, ref _params, out _paramVersion, true);
-                }
-                catch (Exception e)
-                {
-                    PlatformUtils.Instance.MessageBox($"Param Load failed: {param}: {e.Message}", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-                }
-            }
+            
 
             // BB, SDT
             if (Smithbox.ProjectType == ProjectType.SDT || Smithbox.ProjectType == ProjectType.BB)
@@ -163,7 +174,7 @@ namespace StudioCore.Tools
             {
                 try
                 {
-                    using BND4 bnd = SFUtil.DecryptERRegulation(param);
+                    using BND4 bnd = SFUtil.DecryptERRegulation(param.ToArray());
                     LoadParamFromBinder(bnd, ref _params, out _paramVersion, true);
                 }
                 catch (Exception e)
@@ -176,7 +187,7 @@ namespace StudioCore.Tools
             {
                 try
                 {
-                    using BND4 bnd = SFUtil.DecryptAC6Regulation(param);
+                    using BND4 bnd = SFUtil.DecryptAC6Regulation(param.ToArray());
                     LoadParamFromBinder(bnd, ref _params, out _paramVersion, true);
                 }
                 catch (Exception e)

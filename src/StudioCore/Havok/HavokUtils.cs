@@ -54,24 +54,13 @@ public static class HavokUtils
         bool isValid = false;
         byte[] CompendiumBytes = null;
 
-        var bdtPath = $"{Smithbox.GameRoot}\\map\\{mapId.Substring(0, 3)}\\{mapId}\\{type}{mapId.Substring(1)}.hkxbdt";
-        var bhdPath = $"{Smithbox.GameRoot}\\map\\{mapId.Substring(0, 3)}\\{mapId}\\{type}{mapId.Substring(1)}.hkxbhd";
+        var bdtPath = $"map\\{mapId.Substring(0, 3)}\\{mapId}\\{type}{mapId.Substring(1)}.hkxbdt";
+        var bhdPath = $"map\\{mapId.Substring(0, 3)}\\{mapId}\\{type}{mapId.Substring(1)}.hkxbhd";
 
         // If game root version exists, mark as valid
-        if (File.Exists(bdtPath) && File.Exists(bhdPath))
+        if (Smithbox.FS.FileExists(bdtPath) && Smithbox.FS.FileExists(bhdPath))
         {
             isValid = true;
-        }
-
-        // If project version exists, point path to that instead, and mark as valid
-        var projectBdtPath = $"{Smithbox.ProjectRoot}\\map\\{mapId.Substring(0, 3)}\\{mapId}\\{type}{mapId.Substring(1)}.hkxbdt";
-        var projectBhdPath = $"{Smithbox.ProjectRoot}\\map\\{mapId.Substring(0, 3)}\\{mapId}\\{type}{mapId.Substring(1)}.hkxbhd";
-
-        if (File.Exists(projectBdtPath) &&  File.Exists(projectBhdPath))
-        {
-            bdtPath = projectBdtPath;
-            bhdPath = projectBhdPath;
-            isValid = true; // Load project if they are custom hkxbhd/hkxbdt
         }
 
         // If not marked as valid, return early to avoid bad read
@@ -80,7 +69,10 @@ public static class HavokUtils
             return;
         }
 
-        BXF4Reader reader = new BXF4Reader(bhdPath, bdtPath);
+        var bhd = Smithbox.FS.ReadFile(bhdPath).Value;
+        var bdt = Smithbox.FS.ReadFile(bdtPath).Value;
+
+        BXF4Reader reader = new BXF4Reader(bhd, bdt);
 
         // Get compendium
         foreach (var file in reader.Files)

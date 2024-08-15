@@ -123,7 +123,7 @@ public class FlverResource : IResource, IDisposable
         bool ret;
         if (Smithbox.ProjectType is ProjectType.DES)
         {
-            FlverDeS = FLVER0.Read(path);
+            FlverDeS = FLVER0.Read(Smithbox.FS.GetFile(path).GetData());
             ret = LoadInternalDeS(al);
         }
         else
@@ -141,7 +141,7 @@ public class FlverResource : IResource, IDisposable
             }
             else
             {
-                Flver = FLVER2.Read(path);
+                Flver = FLVER2.Read(Smithbox.FS.GetFile(path).GetData());
                 ret = LoadInternal(al);
             }
         }

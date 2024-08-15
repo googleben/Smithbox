@@ -107,7 +107,7 @@ namespace StudioCore.Tools
             {
                 TaskLogs.AddLog($"{path}");
 
-                var bnd = BND4.Read(path);
+                var bnd = BND4.Read(Smithbox.FS.GetFile(path).GetData());
                 foreach (var file in bnd.Files)
                 {
                     var name = Path.GetFileName(Path.GetFileName(file.Name));

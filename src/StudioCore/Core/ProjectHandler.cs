@@ -1,4 +1,6 @@
-﻿using ImGuiNET;
+﻿using Andre.IO.VFS;
+using DotNext.Collections.Generic;
+using ImGuiNET;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.Logging;
 using StudioCore.Editor;
@@ -113,6 +115,8 @@ public class ProjectHandler
         Smithbox.GameRoot = CurrentProject.Config.GameRoot;
         Smithbox.ProjectRoot = Path.GetDirectoryName(path);
         Smithbox.SmithboxDataRoot = $"{Smithbox.ProjectRoot}\\.smithbox";
+        //load filesystems
+        UpdateFilesystems();
 
         if (Smithbox.ProjectRoot == "")
             TaskLogs.AddLog("Smithbox.ProjectRoot is empty!");
@@ -174,6 +178,47 @@ public class ProjectHandler
         Smithbox.GameRoot = CurrentProject.Config.GameRoot;
         Smithbox.ProjectRoot = Path.GetDirectoryName(CurrentProject.ProjectJsonPath);
         Smithbox.SmithboxDataRoot = $"{Smithbox.ProjectRoot}\\.smithbox";
+        UpdateFilesystems();
+    }
+
+    private void UpdateFilesystems()
+    {
+        List<VirtualFileSystem> fileSystems = [];
+        if ((Smithbox.GameRoot ?? "") != "")
+        {
+            Smithbox.VanillaRealFS = new RealVirtualFileSystem(CurrentProject.Config.GameRoot, false);
+            fileSystems.Add(Smithbox.VanillaRealFS);
+            var bhdGame = CurrentProject.Config.GameType.AsBhdGame();
+            if (bhdGame != null && Directory.GetFileSystemEntries(Smithbox.GameRoot, "*_decrypted.bhd").Length != 0)
+            {
+                Smithbox.VanillaBinderFS = BinderVirtualFileSystem.FromGameFolder(Smithbox.GameRoot, bhdGame.Value);
+                fileSystems.Add(Smithbox.VanillaBinderFS);
+                Smithbox.VanillaFS = new CompundVirtualFileSystem([Smithbox.VanillaRealFS, Smithbox.VanillaBinderFS]);
+            }
+            else
+            {
+                Smithbox.VanillaBinderFS = EmptyVirtualFileSystem.Instance;
+                Smithbox.VanillaFS = Smithbox.VanillaRealFS;
+            }
+        }
+        else
+        {
+            Smithbox.VanillaRealFS = EmptyVirtualFileSystem.Instance;
+            Smithbox.VanillaFS = EmptyVirtualFileSystem.Instance;
+        }
+
+        if ((Smithbox.ProjectRoot ?? "") != "")
+        {
+            Smithbox.ProjectFS = new RealVirtualFileSystem(Smithbox.ProjectRoot!, false);
+            fileSystems.Add(Smithbox.ProjectFS);
+        }
+        else
+        {
+            Smithbox.ProjectFS = EmptyVirtualFileSystem.Instance;
+        }
+
+        if (fileSystems.Count == 0) Smithbox.FS = EmptyVirtualFileSystem.Instance;
+        else Smithbox.FS = new CompundVirtualFileSystem(fileSystems);
     }
 
     public void AddProjectToRecentList(Project targetProject)

@@ -33,7 +33,7 @@ public class NVMNavmeshResource : IResource, IDisposable
 
     public bool _Load(string file, AccessLevel al, string virtPath)
     {
-        Nvm = NVM.Read(file);
+        Nvm = NVM.Read(Smithbox.FS.GetFile(file).GetData());
         return LoadInternal(al);
     }
 

@@ -1,4 +1,5 @@
-﻿using HKLib.hk2018.hkAsyncThreadPool;
+﻿using Andre.IO.VFS;
+using HKLib.hk2018.hkAsyncThreadPool;
 using ImGuiNET;
 using Microsoft.Extensions.Logging;
 using SoulsFormats;
@@ -270,18 +271,11 @@ public static class AnimationBank
 
             if (rootOnly)
             {
-                LoadChrTimeAct($"{Smithbox.GameRoot}\\{filePath}", targetBank);
+                LoadChrTimeAct(filePath, Smithbox.VanillaFS, targetBank);
             }
             else
             {
-                if (File.Exists($"{Smithbox.ProjectRoot}\\{filePath}"))
-                {
-                    LoadChrTimeAct($"{Smithbox.ProjectRoot}\\{filePath}", targetBank);
-                }
-                else
-                {
-                    LoadChrTimeAct($"{Smithbox.GameRoot}\\{filePath}", targetBank);
-                }
+                LoadChrTimeAct(filePath, Smithbox.FS, targetBank);
             }
         }
     }
@@ -327,18 +321,11 @@ public static class AnimationBank
 
                     if (rootOnly)
                     {
-                        LoadObjTimeAct($"{Smithbox.GameRoot}\\{filePath}", targetBank, folder);
+                        LoadObjTimeAct(filePath, Smithbox.VanillaFS, targetBank, folder);
                     }
                     else
                     {
-                        if (File.Exists($"{Smithbox.ProjectRoot}\\{filePath}"))
-                        {
-                            LoadObjTimeAct($"{Smithbox.ProjectRoot}\\{filePath}", targetBank, folder);
-                        }
-                        else
-                        {
-                            LoadObjTimeAct($"{Smithbox.GameRoot}\\{filePath}", targetBank, folder);
-                        }
+                        LoadObjTimeAct(filePath, Smithbox.FS, targetBank, folder);
                     }
                 }
             }
@@ -358,24 +345,17 @@ public static class AnimationBank
 
                 if (rootOnly)
                 {
-                    LoadObjTimeAct($"{Smithbox.GameRoot}\\{filePath}", targetBank);
+                    LoadObjTimeAct(filePath, Smithbox.VanillaFS, targetBank);
                 }
                 else
                 {
-                    if (File.Exists($"{Smithbox.ProjectRoot}\\{filePath}"))
-                    {
-                        LoadObjTimeAct($"{Smithbox.ProjectRoot}\\{filePath}", targetBank);
-                    }
-                    else
-                    {
-                        LoadObjTimeAct($"{Smithbox.GameRoot}\\{filePath}", targetBank);
-                    }
+                    LoadObjTimeAct(filePath, Smithbox.FS, targetBank);
                 }
             }
         }
     }
 
-    public static void LoadChrTimeAct(string path, Dictionary<ContainerFileInfo, BinderInfo> targetBank)
+    public static void LoadChrTimeAct(string path, VirtualFileSystem fs, Dictionary<ContainerFileInfo, BinderInfo> targetBank)
     {
         if (path == null)
         {
@@ -403,7 +383,7 @@ public static class AnimationBank
 
             try
             {
-                var fileBytes = File.ReadAllBytes(path);
+                var fileBytes = fs.GetFile(path).GetData();
                 TAE taeFile = TAE.Read(fileBytes);
                 InternalFileInfo tInfo = new(path, taeFile);
                 fileStruct.InternalFiles.Add(tInfo);
@@ -421,13 +401,13 @@ public static class AnimationBank
 
             if (Smithbox.ProjectType is ProjectType.DS1 or ProjectType.DS1R)
             {
-                var bytes = DCX.Decompress(path);
+                var bytes = DCX.Decompress(fs.GetFile(path).GetData());
                 if(bytes.Length > 0)
                     binder = BND3.Read(bytes);
             }
             else
             {
-                var bytes = DCX.Decompress(path);
+                var bytes = DCX.Decompress(fs.GetFile(path).GetData());
                 if (bytes.Length > 0)
                     binder = BND4.Read(bytes);
             }
@@ -466,7 +446,7 @@ public static class AnimationBank
         }
     }
 
-    public static void LoadObjTimeAct(string path, Dictionary<ContainerFileInfo, BinderInfo> targetBank, string aegFolder="")
+    public static void LoadObjTimeAct(string path, VirtualFileSystem fs, Dictionary<ContainerFileInfo, BinderInfo> targetBank, string aegFolder="")
     {
         if (path == null)
         {
@@ -501,7 +481,7 @@ public static class AnimationBank
 
             try
             {
-                var fileBytes = File.ReadAllBytes(path);
+                var fileBytes = fs.GetFile(path).GetData();
                 TAE taeFile = TAE.Read(fileBytes);
                 InternalFileInfo tInfo = new(path, taeFile);
                 fileStruct.InternalFiles.Add(tInfo);
@@ -519,13 +499,13 @@ public static class AnimationBank
 
             if (Smithbox.ProjectType is ProjectType.DS1 or ProjectType.DS1R)
             {
-                var bytes = DCX.Decompress(path);
+                var bytes = DCX.Decompress(fs.GetFile(path).GetData());
                 if (bytes.Length > 0)
                     binder = BND3.Read(bytes);
             }
             else
             {
-                var bytes = DCX.Decompress(path);
+                var bytes = DCX.Decompress(fs.GetFile(path).GetData());
                 if (bytes.Length > 0)
                     binder = BND4.Read(bytes);
             }
@@ -607,30 +587,9 @@ public static class AnimationBank
         // Direct file with DS2
         var fileBytes = info.InternalFiles.First().TAE.Write();
 
-        var assetRoot = $@"{Smithbox.GameRoot}\{fileDir}\{info.Name}{fileExt}";
-        var assetMod = $@"{Smithbox.ProjectRoot}\{fileDir}\{info.Name}{fileExt}";
-        var assetModDir = $@"{Smithbox.ProjectRoot}\{fileDir}\";
-
-        if (!Directory.Exists(assetModDir))
-        {
-            Directory.CreateDirectory(assetModDir);
-        }
-
-        // Make a backup of the original file if a mod path doesn't exist
-        if (Smithbox.ProjectRoot == null && !File.Exists($@"{assetRoot}.bak") && File.Exists(assetRoot))
-        {
-            File.Copy(assetRoot, $@"{assetRoot}.bak", true);
-        }
-        else if (File.Exists(assetMod))
-        {
-            File.Copy(assetMod, $@"{assetMod}.bak", true);
-        }
-
-        if (fileBytes != null)
-        {
-            File.WriteAllBytes(assetMod, fileBytes);
-            TaskLogs.AddLog($"Saved at: {assetMod}");
-        }
+        var assetRoot = $@"{fileDir}\{info.Name}{fileExt}";
+        
+        Utils.TrySaveFile(assetRoot, fileBytes);
     }
 
     public static void HandleBinderContents(ContainerFileInfo info, BinderInfo binderInfo, IBinder binder)
@@ -756,34 +715,9 @@ public static class AnimationBank
 
             byte[] fileBytes = GetBinderBytes(binderInfo.ContainerBinder);
 
-            var assetRoot = $@"{Smithbox.GameRoot}\{fileDir}\{info.Name}{fileExt}";
-            var assetMod = $@"{Smithbox.ProjectRoot}\{fileDir}\{info.Name}{fileExt}";
+            var assetRoot = $@"{fileDir}\{info.Name}{fileExt}";
 
-            if (fileBytes != null)
-            {
-                // Add folder if it does not exist in GameModDirectory
-                if (!Directory.Exists($"{Smithbox.ProjectRoot}\\{fileDir}\\"))
-                {
-                    Directory.CreateDirectory($"{Smithbox.ProjectRoot}\\{fileDir}\\");
-                }
-
-                // Make a backup of the original file if a mod path doesn't exist
-                if (Smithbox.ProjectRoot == null && !File.Exists($@"{assetRoot}.bak") && File.Exists(assetRoot))
-                {
-                    File.Copy(assetRoot, $@"{assetRoot}.bak", true);
-                }
-                else if(File.Exists(assetMod))
-                {
-                    File.Copy(assetMod, $@"{assetMod}.bak", true);
-                }
-
-                File.WriteAllBytes(assetMod, fileBytes);
-                TaskLogs.AddLog($"Saved {info.Name} - {assetMod}.");
-            }
-            else
-            {
-                TaskLogs.AddLog($"Failed to save {info.Name} - {assetMod}.");
-            }
+            Utils.TrySaveFile(assetRoot, fileBytes);
         }
     }
 

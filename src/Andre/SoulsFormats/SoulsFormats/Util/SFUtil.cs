@@ -508,11 +508,10 @@ namespace SoulsFormats
 
 
         /// <summary>
-        /// Decrypts and unpacks DS2's regulation BND4 from the specified path.
+        /// Decrypts and unpacks DS2's regulation BND4.
         /// </summary>
-        public static BND4 DecryptDS2Regulation(string path)
+        public static BND4 DecryptDS2Regulation(byte[] bytes)
         {
-            byte[] bytes = File.ReadAllBytes(path);
             if (BND4.IsRead(bytes, out BND4 bnd4)) 
                 return bnd4; 
             byte[] iv = new byte[16];
@@ -529,11 +528,10 @@ namespace SoulsFormats
         }
 
         /// <summary>
-        /// Decrypts and unpacks DS3's regulation BND4 from the specified path.
+        /// Decrypts and unpacks DS3's regulation BND4.
         /// </summary>
-        public static BND4 DecryptDS3Regulation(string path)
+        public static BND4 DecryptDS3Regulation(byte[] bytes)
         {
-            byte[] bytes = File.ReadAllBytes(path);
             if (BND4.IsRead(bytes, out BND4 bnd4)) 
                 return bnd4; 
             bytes = DecryptByteArray(ds3RegulationKey, bytes);
@@ -541,24 +539,22 @@ namespace SoulsFormats
         }
 
         /// <summary>
-        /// Repacks and encrypts DS3's regulation BND4 to the specified path.
+        /// Repacks and encrypts DS3's regulation BND4.
         /// </summary>
-        public static void EncryptDS3Regulation(string path, BND4 bnd)
+        public static byte[] EncryptDS3Regulation(BND4 bnd)
         {
             byte[] bytes = bnd.Write();
             bytes = EncryptByteArray(ds3RegulationKey, bytes);
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
-            File.WriteAllBytes(path, bytes);
+            return bytes;
         }
 
         public static readonly byte[] erRegulationKey = ParseHexString("99 BF FC 36 6A 6B C8 C6 F5 82 7D 09 36 02 D6 76 C4 28 92 A0 1C 20 7F B0 24 D3 AF 4E 49 3F EF 99");
 
         /// <summary>
-        /// Decrypts and unpacks ER's regulation BND4 from the specified path.
+        /// Decrypts and unpacks ER's regulation BND4.
         /// </summary>
-        public static BND4 DecryptERRegulation(string path)
+        public static BND4 DecryptERRegulation(byte[] bytes)
         {
-            byte[] bytes = File.ReadAllBytes(path);
             if (BND4.IsRead(bytes, out BND4 bnd4)) 
                 return bnd4; 
             bytes = DecryptByteArray(erRegulationKey, bytes);
@@ -568,11 +564,10 @@ namespace SoulsFormats
         private static readonly byte[] ac6RegulationKey = ParseHexString("10 CE ED 47 7B 7C D9 D7 E6 93 8E 11 47 13 E7 87 D5 39 13 B1 D 31 8E C1 35 E4 BE 50 50 4E E 10");
 
         /// <summary>
-        /// Decrypts and unpacks ER's regulation BND4 from the specified path.
+        /// Decrypts and unpacks ER's regulation BND4.
         /// </summary>
-        public static BND4 DecryptAC6Regulation(string path)
+        public static BND4 DecryptAC6Regulation(byte[] bytes)
         {
-            byte[] bytes = File.ReadAllBytes(path);
             if (BND4.IsRead(bytes, out BND4 bnd4)) 
                 return bnd4; 
             bytes = DecryptByteArray(ac6RegulationKey, bytes);
@@ -580,25 +575,23 @@ namespace SoulsFormats
         }
 
         /// <summary>
-        /// Repacks and encrypts ER's regulation BND4 to the specified path.
+        /// Repacks and encrypts ER's regulation BND4.
         /// </summary>
-        public static void EncryptERRegulation(string path, BND4 bnd)
+        public static byte[] EncryptERRegulation(BND4 bnd)
         {
             byte[] bytes = bnd.Write();
             bytes = EncryptByteArray(erRegulationKey, bytes);
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
-            File.WriteAllBytes(path, bytes);
+            return bytes;
         }
 
         /// <summary>
-        /// Repacks and encrypts ER's regulation BND4 to the specified path.
+        /// Repacks and encrypts ER's regulation BND4.
         /// </summary>
-        public static void EncryptAC6Regulation(string path, BND4 bnd)
+        public static byte[] EncryptAC6Regulation(BND4 bnd)
         {
             byte[] bytes = bnd.Write();
             bytes = EncryptByteArray(ac6RegulationKey, bytes);
-            Directory.CreateDirectory(Path.GetDirectoryName(path));
-            File.WriteAllBytes(path, bytes);
+            return bytes;
         }
 
         private static byte[] EncryptByteArray(byte[] key, byte[] secret)

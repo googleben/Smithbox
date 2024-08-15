@@ -1,7 +1,9 @@
 //using Microsoft.Xna.Framework;
 
+using Andre.IO.VFS;
 using DotNext;
 using ImGuiNET;
+using Microsoft.Extensions.Logging;
 using Microsoft.Win32;
 using SoulsFormats;
 using StudioCore.Configuration;
@@ -311,11 +313,87 @@ public static class Utils
     public static void WriteWithBackup<T>(string assetPath, T item,
         params object[] writeparms) where T : SoulsFile<T>, new()
     {
-        WriteWithBackup(Smithbox.GameRoot, Smithbox.ProjectRoot, assetPath, item,
+        WriteWithBackup(Smithbox.FS, Smithbox.ProjectFS, assetPath, item,
             Smithbox.ProjectType, writeparms);
     }
 
-    public static void WriteWithBackup<T>(string gamedir, string moddir, string assetpath, T item,
+    public static void WriteWithBackup<T>(VirtualFileSystem vanillaFs, VirtualFileSystem toFs, string assetPath,
+        T item, ProjectType gameType = ProjectType.Undefined, params object[] writeparms) where T : SoulsFile<T>, new()
+    {
+        try
+        {
+            // Make a backup of the original file if a mod path doesn't exist
+            if (toFs != Smithbox.ProjectFS && !toFs.FileExists($"{assetPath}.bak") && toFs.FileExists(assetPath))
+            {
+                toFs.Copy(assetPath, $"{assetPath}.bak");
+            }
+
+            if (gameType == ProjectType.DS3 && item is BND4 bndDS3)
+            {
+                toFs.WriteFile(assetPath+"temp", SFUtil.EncryptDS3Regulation(bndDS3));
+            }
+            else if (gameType == ProjectType.ER && item is BND4 bndER)
+            {
+                toFs.WriteFile(assetPath+"temp", SFUtil.EncryptERRegulation(bndER));
+            }
+            else if (gameType == ProjectType.AC6 && item is BND4 bndAC6)
+            {
+                toFs.WriteFile(assetPath+"temp", SFUtil.EncryptAC6Regulation(bndAC6));
+            }
+            else if (item is BXF3 or BXF4)
+            {
+                var bhdPath = $@"{(string)writeparms[0]}";
+                if (item is BXF3 bxf3)
+                {
+                    bxf3.Write(out var bhd, out var bdt);
+                    toFs.WriteFile(bhdPath+".temp", bhd);
+                    toFs.WriteFile(assetPath+".temp", bdt);
+
+                    // Ugly but until I rethink the binder API we need to dispose it before touching the existing files
+                    bxf3.Dispose();
+                }
+                else if (item is BXF4 bxf4)
+                {
+                    bxf4.Write(out var bhd, out var bdt);
+                    toFs.WriteFile(bhdPath+".temp", bhd);
+                    toFs.WriteFile(assetPath+".temp", bdt);
+
+                    // Ugly but until I rethink the binder API we need to dispose it before touching the existing files
+                    bxf4.Dispose();
+                }
+
+                if (toFs.FileExists(bhdPath))
+                {
+                    toFs.Copy(bhdPath, bhdPath+".prev");
+                }
+                toFs.Move(bhdPath+".temp", bhdPath);
+
+                return;
+            }
+            else
+            {
+                toFs.WriteFile(assetPath+".temp", item.Write());
+            }
+
+            // Ugly but until I rethink the binder API we need to dispose it before touching the existing files
+            if (item is IDisposable d)
+            {
+                d.Dispose();
+            }
+            
+            if (toFs.FileExists(assetPath))
+            {
+                toFs.Copy(assetPath, assetPath+".prev");
+            }
+            toFs.Move(assetPath+".temp", assetPath);
+        }
+        catch (Exception e)
+        {
+            throw new SavingFailedException(Path.GetFileName(assetPath), e);
+        }
+    }
+
+    /*public static void WriteWithBackup<T>(string gamedir, string moddir, string assetpath, T item,
         ProjectType gameType = ProjectType.Undefined, params object[] writeparms) where T : SoulsFile<T>, new()
     {
         var assetgamepath = $@"{gamedir}\{assetpath}";
@@ -414,9 +492,9 @@ public static class Utils
         {
             throw new SavingFailedException(Path.GetFileName(assetmodpath), e);
         }
-    }
+    }*/
 
-    public static void WriteStringWithBackup(string gamedir, string moddir, string assetpath, string item)
+    /*public static void WriteStringWithBackup(string gamedir, string moddir, string assetpath, string item)
     {
         var assetgamepath = $@"{gamedir}\{assetpath}";
         var assetmodpath = $@"{moddir}\{assetpath}";
@@ -451,7 +529,7 @@ public static class Utils
         }
 
         File.Move(writepath + ".temp", writepath);
-    }
+    }*/
 
     // From Veldrid Neo Demo
     public static Matrix4x4 CreatePerspective(
@@ -1150,5 +1228,51 @@ public static class Utils
             diff = min - max;
 
         return (diff * randomValue);
+    }
+    /// <summary>
+    /// Gets the VirtualFileSystem we should use for writes.
+    /// If no suitable VFS is found, throws InvalidOperationException.
+    /// </summary>
+    /// <returns></returns>
+    public static VirtualFileSystem GetFSForWrites()
+    {
+        if (Smithbox.ProjectFS is not EmptyVirtualFileSystem)
+            return Smithbox.ProjectFS;
+        if (Smithbox.VanillaRealFS is not EmptyVirtualFileSystem)
+            return Smithbox.VanillaRealFS;
+        throw new InvalidOperationException("No suitable VFS was found for writes");
+    }
+
+    public static void SaveFile(string path, byte[] data)
+    {
+        if (data == null)
+        {
+            Console.WriteLine($"Tried to write null bytes to \"{path}\" for some reason...");
+        }
+        var fs = GetFSForWrites();
+        //if we don't have a dedicated project fs, we should make a backup
+        if (fs != Smithbox.ProjectFS && fs.TryGetFile(path, out var file))
+        {
+            string backupPath = $"{path}.bak";
+            if (!fs.FileExists(backupPath))
+            {
+                fs.WriteFile(backupPath, file.GetData().ToArray());
+            }
+        }
+        fs.WriteFile(path, data);
+    }
+
+    public static bool TrySaveFile(string path, byte[] data)
+    {
+        try
+        {
+            SaveFile(path, data);
+            return true;
+        }
+        catch (Exception e)
+        {
+            TaskLogs.AddLog($"Failed to save file {path}: {e}", LogLevel.Error);
+            return false;
+        }
     }
 }

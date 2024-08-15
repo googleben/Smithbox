@@ -250,7 +250,7 @@ public static class AliasUtils
             sPrefix = gparamName.Substring(0, 6).Replace("s", "m"); // Cutscene
         }
 
-        if (Smithbox.BankHandler.GparamAliases.Aliases.list != null)
+        if (Smithbox.BankHandler?.GparamAliases?.Aliases?.list != null)
         {
             foreach (var entry in Smithbox.BankHandler.GparamAliases.Aliases.list)
             {

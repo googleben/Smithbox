@@ -141,7 +141,7 @@ public class FMGLanguage
     {
         foreach (FMGInfo info in _FmgInfoBanks.SelectMany((x) => x.Value.FmgInfos))
         {
-            Utils.WriteWithBackup(Smithbox.GameRoot, Smithbox.ProjectRoot,
+            Utils.WriteWithBackup(Smithbox.FS, Smithbox.ProjectFS,
                 $@"menu\text\{LanguageFolder}\{info.Name}.fmg", info.Fmg);
         }
     }
@@ -195,13 +195,13 @@ public class FMGLanguage
 
         if (Smithbox.ProjectType is ProjectType.DES or ProjectType.DS1 or ProjectType.DS1R)
         {
-            fmgBinderItem = BND3.Read(itemMsgPath.AssetPath);
-            fmgBinderMenu = BND3.Read(menuMsgPath.AssetPath);
+            fmgBinderItem = BND3.Read(Smithbox.FS.GetFile(itemMsgPath.AssetPath).GetData());
+            fmgBinderMenu = BND3.Read(Smithbox.FS.GetFile(menuMsgPath.AssetPath).GetData());
         }
         else
         {
-            fmgBinderItem = BND4.Read(itemMsgPath.AssetPath);
-            fmgBinderMenu = BND4.Read(menuMsgPath.AssetPath);
+            fmgBinderItem = BND4.Read(Smithbox.FS.GetFile(itemMsgPath.AssetPath).GetData());
+            fmgBinderMenu = BND4.Read(Smithbox.FS.GetFile(menuMsgPath.AssetPath).GetData());
         }
 
         // Item
@@ -268,25 +268,22 @@ public class FMGLanguage
             }
         }
 
-        var parentDir = Smithbox.GameRoot;
-        var modDir = Smithbox.ProjectRoot;
-
         if (fmgBinderItem is BND3 bnd3)
         {
-            Utils.WriteWithBackup(parentDir, modDir, itemMsgPathDest.AssetPath, bnd3);
-            Utils.WriteWithBackup(parentDir, modDir, menuMsgPathDest.AssetPath, (BND3)fmgBinderMenu);
+            Utils.WriteWithBackup(Smithbox.FS, Smithbox.ProjectFS, itemMsgPathDest.AssetPath, bnd3);
+            Utils.WriteWithBackup(Smithbox.FS, Smithbox.ProjectFS, menuMsgPathDest.AssetPath, (BND3)fmgBinderMenu);
             if (Smithbox.ProjectType is ProjectType.DES)
             {
                 bnd3.Compression = DCX.Type.None;
                 ((BND3)fmgBinderMenu).Compression = DCX.Type.None;
-                Utils.WriteWithBackup(parentDir, modDir, itemMsgPathDest.AssetPath[..^4], bnd3);
-                Utils.WriteWithBackup(parentDir, modDir, menuMsgPathDest.AssetPath[..^4], (BND3)fmgBinderMenu);
+                Utils.WriteWithBackup(Smithbox.FS, Smithbox.ProjectFS, itemMsgPathDest.AssetPath[..^4], bnd3);
+                Utils.WriteWithBackup(Smithbox.FS, Smithbox.ProjectFS, menuMsgPathDest.AssetPath[..^4], (BND3)fmgBinderMenu);
             }
         }
         else if (fmgBinderItem is BND4 bnd4)
         {
-            Utils.WriteWithBackup(parentDir, modDir, itemMsgPathDest.AssetPath, bnd4);
-            Utils.WriteWithBackup(parentDir, modDir, menuMsgPathDest.AssetPath, (BND4)fmgBinderMenu);
+            Utils.WriteWithBackup(Smithbox.FS, Smithbox.ProjectFS, itemMsgPathDest.AssetPath, bnd4);
+            Utils.WriteWithBackup(Smithbox.FS, Smithbox.ProjectFS, menuMsgPathDest.AssetPath, (BND4)fmgBinderMenu);
         }
 
         fmgBinderItem.Dispose();

@@ -18,7 +18,7 @@ namespace StudioCore.Tools
             {
                 if(info.Path.Contains("bnd.dcx"))
                 {
-                    BND4Reader reader = new BND4Reader(info.Path);
+                    BND4Reader reader = new BND4Reader(Smithbox.FS.ReadFile(info.Path).Value);
                     foreach(var file in reader.Files)
                     {
                         if(file.Name.Contains(".flv"))

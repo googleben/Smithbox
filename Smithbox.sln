@@ -51,6 +51,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HKLib.Serialization", "src\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "HKLib.Tests", "src\HKLib.Tests\HKLib.Tests.csproj", "{D220DABC-1600-48E7-A7CA-C6E0D4EF61AB}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AndreTest", "AndreTest\AndreTest.csproj", "{5C6420EA-1F31-411E-B3E7-7DED6CF28348}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -243,6 +245,14 @@ Global
 		{D220DABC-1600-48E7-A7CA-C6E0D4EF61AB}.Release|Any CPU.Build.0 = Release|Any CPU
 		{D220DABC-1600-48E7-A7CA-C6E0D4EF61AB}.Release|x64.ActiveCfg = Release|Any CPU
 		{D220DABC-1600-48E7-A7CA-C6E0D4EF61AB}.Release|x64.Build.0 = Release|Any CPU
+		{5C6420EA-1F31-411E-B3E7-7DED6CF28348}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5C6420EA-1F31-411E-B3E7-7DED6CF28348}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5C6420EA-1F31-411E-B3E7-7DED6CF28348}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{5C6420EA-1F31-411E-B3E7-7DED6CF28348}.Debug|x64.Build.0 = Debug|Any CPU
+		{5C6420EA-1F31-411E-B3E7-7DED6CF28348}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5C6420EA-1F31-411E-B3E7-7DED6CF28348}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5C6420EA-1F31-411E-B3E7-7DED6CF28348}.Release|x64.ActiveCfg = Release|Any CPU
+		{5C6420EA-1F31-411E-B3E7-7DED6CF28348}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

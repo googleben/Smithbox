@@ -25,14 +25,10 @@ namespace StudioCore.Tools
             CFG.Current.System_IgnoreAsserts = false;
             HasFinished = false;
 
-            var mapDir = $"{Smithbox.GameRoot}/map/mapstudio/";
+            var fs = TargetProject ? Smithbox.ProjectFS : Smithbox.VanillaFS;
+            var mapDir = "map/mapstudio/";
 
-            if (TargetProject)
-            {
-                mapDir = $"{Smithbox.ProjectRoot}/map/mapstudio/";
-            }
-
-            foreach (var entry in Directory.EnumerateFiles(mapDir))
+            foreach (var entry in fs.GetDirectory(mapDir).EnumerateFileNames())
             {
                 if (entry.Contains(".msb.dcx"))
                 {
@@ -49,56 +45,56 @@ namespace StudioCore.Tools
             {
                 foreach (var res in resMaps)
                 {
-                    var msb = MSBD.Read(res.AssetPath);
+                    var msb = MSBD.Read(fs.GetFile(res.AssetPath).GetData());
                 }
             }
             if (Smithbox.ProjectType == ProjectType.DS1 || Smithbox.ProjectType == ProjectType.DS1R)
             {
                 foreach (var res in resMaps)
                 {
-                    var msb = MSB1.Read(res.AssetPath);
+                    var msb = MSB1.Read(fs.GetFile(res.AssetPath).GetData());
                 }
             }
             if (Smithbox.ProjectType == ProjectType.DS2 || Smithbox.ProjectType == ProjectType.DS2S )
             {
                 foreach (var res in resMaps)
                 {
-                    var msb = MSB2.Read(res.AssetPath);
+                    var msb = MSB2.Read(fs.GetFile(res.AssetPath).GetData());
                 }
             }
             if (Smithbox.ProjectType == ProjectType.DS3)
             {
                 foreach (var res in resMaps)
                 {
-                    var msb = MSB3.Read(res.AssetPath);
+                    var msb = MSB3.Read(fs.GetFile(res.AssetPath).GetData());
                 }
             }
             if (Smithbox.ProjectType == ProjectType.BB)
             {
                 foreach (var res in resMaps)
                 {
-                    var msb = MSBB.Read(res.AssetPath);
+                    var msb = MSBB.Read(fs.GetFile(res.AssetPath).GetData());
                 }
             }
             if (Smithbox.ProjectType == ProjectType.SDT)
             {
                 foreach (var res in resMaps)
                 {
-                    var msb = MSBS.Read(res.AssetPath);
+                    var msb = MSBS.Read(fs.GetFile(res.AssetPath).GetData());
                 }
             }
             if (Smithbox.ProjectType == ProjectType.ER)
             {
                 foreach (var res in resMaps)
                 {
-                    var msb = MSBE.Read(res.AssetPath);
+                    var msb = MSBE.Read(fs.GetFile(res.AssetPath).GetData());
                 }
             }
             if (Smithbox.ProjectType == ProjectType.AC6)
             {
                 foreach (var res in resMaps)
                 {
-                    var msb = MSB_AC6.Read(res.AssetPath);
+                    var msb = MSB_AC6.Read(fs.GetFile(res.AssetPath).GetData());
                 }
             }
 

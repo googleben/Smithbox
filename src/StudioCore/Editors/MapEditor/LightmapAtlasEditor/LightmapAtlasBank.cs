@@ -41,7 +41,7 @@ public class LightmapAtlasBank
 
                 try
                 {
-                    BTAB lightmapAtlas = BTAB.Read(entry.AssetPath);
+                    BTAB lightmapAtlas = BTAB.Read(Smithbox.FS.GetFile(entry.AssetPath).GetData());
                     info.LightmapAtlas = lightmapAtlas;
                     mapBTABs.Add(info);
                 }

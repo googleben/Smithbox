@@ -76,7 +76,7 @@ namespace SoulsFormats
         /// <summary>
         /// Loads a file from the specified path, automatically decompressing it if necessary.
         /// </summary>
-        public static TFormat Read(string path)
+        /*public static TFormat Read(string path)
         {
             using var file = MemoryMappedFile.CreateFromFile(path, FileMode.Open, null, 0, MemoryMappedFileAccess.Read);
             using var accessor = file.CreateMemoryAccessor(0, 0, MemoryMappedFileAccess.Read);
@@ -86,7 +86,7 @@ namespace SoulsFormats
             ret.Compression = compression;
             ret.Read(br);
             return ret;
-        }
+        }*/
 
         /// <summary>
         /// Loads a file from a byte array while ignoring compression.

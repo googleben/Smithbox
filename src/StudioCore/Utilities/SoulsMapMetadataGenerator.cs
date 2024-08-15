@@ -61,18 +61,18 @@ public static class SoulsMapMetadataGenerator
             var msbPath = Path.GetDirectoryName(dir) + $"\\mapstudio\\{name}.msb";
 
             List<string> msbNavmeshNames = new List<string>();
-            if (File.Exists(msbPath))
+            if (Smithbox.FS.FileExists(msbPath))
             {
                 if(Smithbox.ProjectType == ProjectType.DES)
                 {
-                    var msb = SoulsFile<MSBD>.Read(msbPath);
+                    var msb = SoulsFile<MSBD>.Read(Smithbox.FS.GetFile(msbPath).GetData());
                     foreach (var navMesh in msb.Parts.Navmeshes)
                     {
                         msbNavmeshNames.Add(navMesh.ModelName.ToLower());
                     }
                 } else if (Smithbox.ProjectType is ProjectType.DS1 or ProjectType.DS1R)
                 {
-                    var msb = SoulsFile<MSB1>.Read(msbPath);
+                    var msb = SoulsFile<MSB1>.Read(Smithbox.FS.GetFile(msbPath).GetData());
                     foreach (var navMesh in msb.Parts.Navmeshes)
                     {
                         msbNavmeshNames.Add(navMesh.ModelName.ToLower());
@@ -83,9 +83,9 @@ public static class SoulsMapMetadataGenerator
             //Get the nvms from the nvmBnd, fall back to loose .nvms if non-existant
             List<NVM> nvmList = new List<NVM>();
             var nvmBnd = Path.Combine(dir, $"{name}.nvmbnd");
-            if (File.Exists(nvmBnd))
+            if (Smithbox.FS.FileExists(nvmBnd))
             {
-                var nvmBndFile = new BND3Reader(nvmBnd);
+                var nvmBndFile = new BND3Reader(Smithbox.FS.ReadFile(nvmBnd).Value);
                 foreach (var nvmFile in nvmBndFile.Files)
                 {
                     var fname = Path.GetFileNameWithoutExtension(nvmFile.Name).ToLower();
@@ -102,13 +102,13 @@ public static class SoulsMapMetadataGenerator
             }
             else
             {
-                var files = Directory.EnumerateFiles(dir, "*.nvm");
+                var files = Smithbox.FS.GetFileNamesMatching(dir, ".*\\.nvm");
                 foreach (var file in files)
                 {
                     var fname = Path.GetFileNameWithoutExtension(file);
                     if (msbNavmeshNames.Contains(fname))
                     {
-                        var nvm = SoulsFile<NVM>.Read(file);
+                        var nvm = SoulsFile<NVM>.Read(Smithbox.FS.GetFile(file).GetData());
                         nvmList.Add(nvm);
                     }
                 }
@@ -336,10 +336,9 @@ public static class SoulsMapMetadataGenerator
                 roomCount += triDicts[pair.Key].Count;
             }
             usedNodeList.Sort();
-            var mcgOut = (dir + $"\\{Path.GetFileName(dir)}.mcg").Replace(baseDirectory, modDirectory);
-            Directory.CreateDirectory(Path.GetDirectoryName(mcgOut));
+            var mcgOut = (dir + $"\\{Path.GetFileName(dir)}.mcg");
             mcCombos[name].mcg.BigEndian = toBigEndian;
-            mcCombos[name].mcg.Write(mcgOut);
+            Smithbox.ProjectFS.WriteFile(mcgOut, mcCombos[name].mcg.Write());
         }
 
         //Set up mcp files
@@ -386,10 +385,9 @@ public static class SoulsMapMetadataGenerator
                 mcpRoom.ConnectedRoomIndices.Sort();
                 mcCombos[name].mcp.Rooms.Add(mcpRoom);
             }
-            var mcpOut = (dir + $"\\{Path.GetFileName(dir)}.mcp").Replace(baseDirectory, modDirectory);
-            Directory.CreateDirectory(Path.GetDirectoryName(mcpOut));
+            var mcpOut = (dir + $"\\{Path.GetFileName(dir)}.mcp");
             mcCombos[name].mcp.BigEndian = toBigEndian;
-            mcCombos[name].mcp.Write(mcpOut);
+            Smithbox.ProjectFS.WriteFile(mcpOut, mcCombos[name].mcp.Write());
         }
 
 

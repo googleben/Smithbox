@@ -53,21 +53,13 @@ public static class MapLocator
             backupPath = $@"\map\MapStudio\{mapid}.msb";
         }
 
-        if (Smithbox.ProjectRoot != null && File.Exists($@"{Smithbox.ProjectRoot}\{preferredPath}") || writemode && Smithbox.ProjectRoot != null)
+        if (Smithbox.FS.FileExists(preferredPath) || writemode && Smithbox.ProjectRoot != null)
         {
-            ad.AssetPath = $@"{Smithbox.ProjectRoot}\{preferredPath}";
+            ad.AssetPath = preferredPath;
         }
-        else if (Smithbox.ProjectRoot != null && File.Exists($@"{Smithbox.ProjectRoot}\{backupPath}") || writemode && Smithbox.ProjectRoot != null)
+        else if (Smithbox.FS.FileExists(backupPath) || writemode && Smithbox.ProjectRoot != null)
         {
-            ad.AssetPath = $@"{Smithbox.ProjectRoot}\{backupPath}";
-        }
-        else if (File.Exists($@"{Smithbox.GameRoot}\{preferredPath}"))
-        {
-            ad.AssetPath = $@"{Smithbox.GameRoot}\{preferredPath}";
-        }
-        else if (File.Exists($@"{Smithbox.GameRoot}\{backupPath}"))
-        {
-            ad.AssetPath = $@"{Smithbox.GameRoot}\{backupPath}";
+            ad.AssetPath = backupPath;
         }
 
         ad.AssetName = mapid;
@@ -92,13 +84,9 @@ public static class MapLocator
             ResourceDescriptor ad = new();
             var path = $@"model\map\g{mapid[1..]}.gibhd";
 
-            if (Smithbox.ProjectRoot != null && File.Exists($@"{Smithbox.ProjectRoot}\{path}") || writemode && Smithbox.ProjectRoot != null)
+            if (Smithbox.FS.FileExists(path) || (writemode && !Smithbox.ProjectFS.IsReadOnly))
             {
-                ad.AssetPath = $@"{Smithbox.ProjectRoot}\{path}";
-            }
-            else if (File.Exists($@"{Smithbox.GameRoot}\{path}"))
-            {
-                ad.AssetPath = $@"{Smithbox.GameRoot}\{path}";
+                ad.AssetPath = path;
             }
 
             if (ad.AssetPath != null)
@@ -111,13 +99,9 @@ public static class MapLocator
             ResourceDescriptor ad2 = new();
             path = $@"model_lq\map\g{mapid[1..]}.gibhd";
 
-            if (Smithbox.ProjectRoot != null && File.Exists($@"{Smithbox.ProjectRoot}\{path}") || writemode && Smithbox.ProjectRoot != null)
+            if (Smithbox.FS.FileExists(path) || (writemode && !Smithbox.ProjectFS.IsReadOnly))
             {
-                ad2.AssetPath = $@"{Smithbox.ProjectRoot}\{path}";
-            }
-            else if (File.Exists($@"{Smithbox.GameRoot}\{path}"))
-            {
-                ad2.AssetPath = $@"{Smithbox.GameRoot}\{path}";
+                ad2.AssetPath = path;
             }
 
             if (ad2.AssetPath != null)
@@ -140,33 +124,17 @@ public static class MapLocator
             }
 
             List<string> files = new();
-
-            if (Directory.Exists($@"{Smithbox.GameRoot}\{path}"))
-            {
-                files.AddRange(Directory.GetFiles($@"{Smithbox.GameRoot}\{path}", "*.btl").ToList());
-                files.AddRange(Directory.GetFiles($@"{Smithbox.GameRoot}\{path}", "*.btl.dcx").ToList());
-            }
-
-            if (Directory.Exists($@"{Smithbox.ProjectRoot}\{path}"))
-            {
-                // Check for additional BTLs the user has created.
-                files.AddRange(Directory.GetFiles($@"{Smithbox.ProjectRoot}\{path}", "*.btl").ToList());
-                files.AddRange(Directory.GetFiles($@"{Smithbox.ProjectRoot}\{path}", "*.btl.dcx").ToList());
-                files = files.DistinctBy(f => f.Split("\\").Last()).ToList();
-            }
+            
+            files.AddRange(Smithbox.FS.GetFileNamesMatching(path, @".*\.btl(\.dcx)?"));
 
             foreach (var file in files)
             {
                 ResourceDescriptor ad = new();
-                var fileName = file.Split("\\").Last();
-
-                if (Smithbox.ProjectRoot != null && File.Exists($@"{Smithbox.ProjectRoot}\{path}\{fileName}") || writemode && Smithbox.ProjectRoot != null)
+                var fileName = Path.GetFileName(file);
+                
+                if (Smithbox.FS.FileExists($@"{path}\{fileName}") || (writemode && !Smithbox.ProjectFS.IsReadOnly))
                 {
-                    ad.AssetPath = $@"{Smithbox.ProjectRoot}\{path}\{fileName}";
-                }
-                else if (File.Exists($@"{Smithbox.GameRoot}\{path}\{fileName}"))
-                {
-                    ad.AssetPath = $@"{Smithbox.GameRoot}\{path}\{fileName}";
+                    ad.AssetPath = $@"{path}\{fileName}";
                 }
 
                 if (ad.AssetPath != null)
@@ -198,34 +166,22 @@ public static class MapLocator
         {
             var path = $@"\map\{mapid.Substring(0, 9)}_00\{mapid}";
 
-            if (Smithbox.ProjectRoot != null && File.Exists($@"{Smithbox.ProjectRoot}\{path}.nva.dcx") || writemode && Smithbox.ProjectRoot != null && Smithbox.ProjectType != ProjectType.DS1)
+            if (Smithbox.FS.FileExists($@"{path}.nva.dcx") || writemode && Smithbox.ProjectRoot != null && Smithbox.ProjectType != ProjectType.DS1)
             {
-                ad.AssetPath = $@"{Smithbox.ProjectRoot}\{path}.nva.dcx";
-            }
-            else if (File.Exists($@"{Smithbox.GameRoot}\{path}.nva.dcx"))
-            {
-                ad.AssetPath = $@"{Smithbox.GameRoot}\{path}.nva.dcx";
+                ad.AssetPath = $"{path}.nva.dcx";
             }
         }
         else
         {
             var path = $@"\map\{mapid}\{mapid}";
 
-            if (Smithbox.ProjectRoot != null && File.Exists($@"{Smithbox.ProjectRoot}\{path}.nva.dcx") || writemode && Smithbox.ProjectRoot != null && Smithbox.ProjectType != ProjectType.DS1)
+            if (Smithbox.FS.FileExists($"{path}.nva.dcx") || writemode && Smithbox.ProjectRoot != null && Smithbox.ProjectType != ProjectType.DS1)
             {
-                ad.AssetPath = $@"{Smithbox.ProjectRoot}\{path}.nva.dcx";
+                ad.AssetPath = $@"{path}.nva.dcx";
             }
-            else if (File.Exists($@"{Smithbox.GameRoot}\{path}.nva.dcx"))
+            else if (Smithbox.FS.FileExists($@"{path}.nva") || writemode && Smithbox.ProjectRoot != null)
             {
-                ad.AssetPath = $@"{Smithbox.GameRoot}\{path}.nva.dcx";
-            }
-            else if (Smithbox.ProjectRoot != null && File.Exists($@"{Smithbox.ProjectRoot}\{path}.nva") || writemode && Smithbox.ProjectRoot != null)
-            {
-                ad.AssetPath = $@"{Smithbox.ProjectRoot}\{path}.nva";
-            }
-            else if (File.Exists($@"{Smithbox.GameRoot}\{path}.nva"))
-            {
-                ad.AssetPath = $@"{Smithbox.GameRoot}\{path}.nva";
+                ad.AssetPath = $@"{path}.nva";
             }
         }
 
@@ -246,65 +202,32 @@ public static class MapLocator
         if (FullMapList != null)
             return FullMapList;
 
-        try
+        HashSet<string> mapSet = new();
+
+        // DS2 has its own structure for msbs, where they are all inside individual folders
+        if (Smithbox.ProjectType == ProjectType.DS2S || Smithbox.ProjectType == ProjectType.DS2)
         {
-            HashSet<string> mapSet = new();
-
-            // DS2 has its own structure for msbs, where they are all inside individual folders
-            if (Smithbox.ProjectType == ProjectType.DS2S || Smithbox.ProjectType == ProjectType.DS2)
-            {
-                var maps = Directory.GetFileSystemEntries(Smithbox.GameRoot + @"\map", @"m*").ToList();
-
-                if (Smithbox.ProjectRoot != null)
-                {
-                    if (Directory.Exists(Smithbox.ProjectRoot + @"\map"))
-                    {
-                        maps.AddRange(Directory.GetFileSystemEntries(Smithbox.ProjectRoot + @"\map", @"m*").ToList());
-                    }
-                }
-
-                foreach (var map in maps)
-                    mapSet.Add(Path.GetFileNameWithoutExtension($@"{map}.blah"));
-            }
-            else
-            {
-                var msbFiles = Directory
-                    .GetFileSystemEntries(Smithbox.GameRoot + @"\map\MapStudio\", @"*.msb")
-                    .Select(Path.GetFileNameWithoutExtension).ToList();
-
-                msbFiles.AddRange(Directory
-                    .GetFileSystemEntries(Smithbox.GameRoot + @"\map\MapStudio\", @"*.msb.dcx")
-                    .Select(Path.GetFileNameWithoutExtension).Select(Path.GetFileNameWithoutExtension).ToList());
-
-                if (Smithbox.ProjectRoot != null && Directory.Exists(Smithbox.ProjectRoot + @"\map\MapStudio\"))
-                {
-                    msbFiles.AddRange(Directory
-                        .GetFileSystemEntries(Smithbox.ProjectRoot + @"\map\MapStudio\", @"*.msb")
-                        .Select(Path.GetFileNameWithoutExtension).ToList());
-
-                    msbFiles.AddRange(Directory
-                        .GetFileSystemEntries(Smithbox.ProjectRoot + @"\map\MapStudio\", @"*.msb.dcx")
-                        .Select(Path.GetFileNameWithoutExtension).Select(Path.GetFileNameWithoutExtension)
-                        .ToList());
-                }
-
-                foreach (var msb in msbFiles)
-                    mapSet.Add(msb);
-            }
-
-            Regex mapRegex = new(@"^m\d{2}_\d{2}_\d{2}_\d{2}$");
-            var mapList = mapSet.Where(x => mapRegex.IsMatch(x)).ToList();
-
-            mapList.Sort();
-
-            FullMapList = mapList;
-            return FullMapList;
+            Smithbox.FS.GetFileNamesMatching(@"\map", @"m.*")
+                .Select(Path.GetFileNameWithoutExtension)
+                .ToList().ForEach(s => mapSet.Add(s));
         }
-        catch (DirectoryNotFoundException e)
+        else
         {
-            // Game is likely not UXM unpacked
-            return new List<string>();
+            Smithbox.FS.GetFileNamesMatching("map/MapStudio", ".*\\.msb")
+                .Select(Path.GetFileNameWithoutExtension)
+                .ToList().ForEach(f => mapSet.Add(f));
+            Smithbox.FS.GetFileNamesMatching("map/MapStudio", ".*\\.msb\\.dcx")
+                .Select(Path.GetFileNameWithoutExtension).Select(Path.GetFileNameWithoutExtension)
+                .ToList().ForEach(f => mapSet.Add(f));
         }
+
+        Regex mapRegex = new(@"^m\d{2}_\d{2}_\d{2}_\d{2}$");
+        var mapList = mapSet.Where(x => mapRegex.IsMatch(x)).ToList();
+
+        mapList.Sort();
+
+        FullMapList = mapList;
+        return FullMapList;
     }
 
     /// <summary>
@@ -349,35 +272,10 @@ public static class MapLocator
     {
         List<ResourceDescriptor> resourceDescriptors = new();
 
-        var rootDirectory = $"{Smithbox.GameRoot}\\map\\{mapid}";
-        var projectDirectory = $"{Smithbox.ProjectRoot}\\map\\{mapid}";
-
         // Get the names
-        var names = new List<string>();
-
-        if (Directory.Exists(rootDirectory))
-        {
-            foreach (var file in Directory.GetFiles(rootDirectory))
-            {
-                var path = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(file));
-
-                if (file.Contains(".btab.dcx"))
-                    names.Add(path);
-            }
-        }
-
-        if (Directory.Exists(projectDirectory))
-        {
-            foreach (var file in Directory.GetFiles(projectDirectory))
-            {
-                var path = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(file));
-                if (file.Contains(".btab.dcx"))
-                {
-                    if (!names.Contains(path))
-                        names.Add(path);
-                }
-            }
-        }
+        var names = Smithbox.FS.GetFileNamesMatching($"map/{mapid}", ".*\\.btab\\.dcx")
+            .Select(Path.GetFileNameWithoutExtension).Select(Path.GetFileNameWithoutExtension)
+            .ToList();
 
         var paths = new List<string>();
 
@@ -407,35 +305,13 @@ public static class MapLocator
     {
         List<ResourceDescriptor> resourceDescriptors = new();
 
-        var rootDirectory = $"{Smithbox.GameRoot}\\map\\{mapid.Substring(0, 3)}\\{mapid}";
-        var projectDirectory = $"{Smithbox.ProjectRoot}\\map\\{mapid.Substring(0, 3)}\\{mapid}";
-
         // Get the names
-        var names = new List<string>();
-
-        if (Directory.Exists(rootDirectory))
-        {
-            foreach (var file in Directory.GetFiles(rootDirectory))
-            {
-                var path = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(file));
-
-                if (file.Contains(".hkxbhd"))
-                    names.Add(path.Replace(".hkxbhd", ""));
-            }
-        }
-
-        if (Directory.Exists(projectDirectory))
-        {
-            foreach (var file in Directory.GetFiles(projectDirectory))
-            {
-                var path = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(file));
-                if (file.Contains(".hkxbhd"))
-                {
-                    if (!names.Contains(path))
-                        names.Add(path.Replace(".hkxbhd", ""));
-                }
-            }
-        }
+        //TODO: check whether the .Replace call is redundant
+        var names = Smithbox.FS
+            .GetFileNamesMatching($"/map/{mapid[..3]}\\{mapid}", ".*\\.hkxbhd.*")
+            .Select(Path.GetFileNameWithoutExtension).Select(Path.GetFileNameWithoutExtension)
+            .Select(s => s.Replace(".hkxbhd", ""))
+            .ToList();
 
         var paths = new List<string>();
 

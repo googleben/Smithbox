@@ -1,4 +1,5 @@
-﻿using ImGuiNET;
+﻿using Andre.IO.VFS;
+using ImGuiNET;
 using Silk.NET.SDL;
 using SoapstoneLib;
 using SoulsFormats;
@@ -40,6 +41,15 @@ public class Smithbox
     public static string GameRoot = "";
     public static string ProjectRoot = "";
     public static string SmithboxDataRoot = AppContext.BaseDirectory; // Fallback directory
+
+    public static VirtualFileSystem VanillaBinderFS = EmptyVirtualFileSystem.Instance;
+
+    public static VirtualFileSystem VanillaRealFS = EmptyVirtualFileSystem.Instance;
+
+    public static VirtualFileSystem VanillaFS = EmptyVirtualFileSystem.Instance;
+    public static VirtualFileSystem FS = EmptyVirtualFileSystem.Instance;
+
+    public static VirtualFileSystem ProjectFS = EmptyVirtualFileSystem.Instance;
 
     private static double _desiredFrameLengthSeconds = 1.0 / 20.0f;
     private static readonly bool _limitFrameRate = true;

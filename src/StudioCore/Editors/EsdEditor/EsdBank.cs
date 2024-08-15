@@ -51,8 +51,7 @@ public static class EsdBank
         BND4 writeBinder = binder as BND4;
         byte[] fileBytes = null;
 
-        var assetRoot = $@"{Smithbox.GameRoot}\{fileDir}\{info.Name}{fileExt}";
-        var assetMod = $@"{Smithbox.ProjectRoot}\{fileDir}\{info.Name}{fileExt}";
+        var assetRoot = $@"{fileDir}\{info.Name}{fileExt}";
 
         switch (Smithbox.ProjectType)
         {
@@ -73,23 +72,7 @@ public static class EsdBank
                 return;
         }
 
-        // Add folder if it does not exist in GameModDirectory
-        if (!Directory.Exists($"{Smithbox.ProjectRoot}\\{fileDir}\\"))
-        {
-            Directory.CreateDirectory($"{Smithbox.ProjectRoot}\\{fileDir}\\");
-        }
-
-        // Make a backup of the original file if a mod path doesn't exist
-        if (Smithbox.ProjectRoot == null && !File.Exists($@"{assetRoot}.bak") && File.Exists(assetRoot))
-        {
-            File.Copy(assetRoot, $@"{assetRoot}.bak", true);
-        }
-
-        if (fileBytes != null)
-        {
-            File.WriteAllBytes(assetMod, fileBytes);
-            //TaskLogs.AddLog($"Saved at: {assetMod}");
-        }
+        Utils.TrySaveFile(assetRoot, fileBytes);
     }
 
     public static void LoadEsdScripts()
@@ -112,17 +95,7 @@ public static class EsdBank
         foreach (var name in talkNames)
         {
             var filePath = $"{fileDir}\\{name}{fileExt}";
-
-            if (File.Exists($"{Smithbox.ProjectRoot}\\{filePath}"))
-            {
-                LoadEsdScript($"{Smithbox.ProjectRoot}\\{filePath}");
-                //TaskLogs.AddLog($"Loaded from GameModDirectory: {filePath}");
-            }
-            else
-            {
-                LoadEsdScript($"{Smithbox.GameRoot}\\{filePath}");
-                //TaskLogs.AddLog($"Loaded from GameRootDirectory: {filePath}");
-            }
+            LoadEsdScript(filePath);
         }
 
         IsLoaded = true;
@@ -149,7 +122,7 @@ public static class EsdBank
         var name = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(path));
         EsdScriptInfo talkInfo = new EsdScriptInfo(name, path);
 
-        IBinder binder = BND4.Read(DCX.Decompress(path));
+        IBinder binder = BND4.Read(DCX.Decompress(Smithbox.FS.GetFile(path).GetData()));
 
         foreach (var file in binder.Files)
         {

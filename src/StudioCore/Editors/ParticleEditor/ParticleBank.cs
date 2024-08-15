@@ -83,45 +83,32 @@ public static class ParticleBank
         {
             var filePath = $"{fileDir}\\{name}{fileExt}";
 
-            var realPath = "";
+            IBinder binder = BND4.Read(DCX.Decompress(Smithbox.FS.GetFile(filePath).GetData()));
+            List<string> fxrFiles = new List<string>();
+            List<string> resourceFiles = new List<string>();
 
-            if (File.Exists($"{Smithbox.ProjectRoot}\\{filePath}"))
+            foreach (var file in binder.Files)
             {
-                realPath = $"{Smithbox.ProjectRoot}\\{filePath}";
-            }
-            else
-            {
-                realPath = $"{Smithbox.GameRoot}\\{filePath}";
-            }
-
-            if (realPath != "")
-            {
-                IBinder binder = BND4.Read(DCX.Decompress(realPath));
-                List<string> fxrFiles = new List<string>();
-                List<string> resourceFiles = new List<string>();
-
-                foreach (var file in binder.Files)
+                // FXR
+                if (file.Name.Contains(".fxr"))
                 {
-                    // FXR
-                    if (file.Name.Contains(".fxr"))
-                    {
-                        fxrFiles.Add(file.Name);
-                    }
-
-                    // FFXRESLIST
-                    if (file.Name.Contains(".ffxreslist"))
-                    {
-                        resourceFiles.Add(file.Name);
-                    }
+                    fxrFiles.Add(file.Name);
                 }
 
-                var fileInfo = new ParticleFileInfo(name, realPath, binder, fxrFiles, resourceFiles);
-
-                if(!FileBank.Contains(fileInfo))
+                // FFXRESLIST
+                if (file.Name.Contains(".ffxreslist"))
                 {
-                    FileBank.Add(fileInfo);
+                    resourceFiles.Add(file.Name);
                 }
             }
+
+            var fileInfo = new ParticleFileInfo(name, filePath, binder, fxrFiles, resourceFiles);
+
+            if(!FileBank.Contains(fileInfo))
+            {
+                FileBank.Add(fileInfo);
+            }
+        
         }
 
         IsLoaded = true;
@@ -204,8 +191,7 @@ public static class ParticleBank
         BND4 writeBinder = parent.Binder as BND4;
         byte[] fileBytes = null;
 
-        var assetRoot = $@"{Smithbox.GameRoot}\{fileDir}\{info.Name}{fileExt}";
-        var assetMod = $@"{Smithbox.ProjectRoot}\{fileDir}\{info.Name}{fileExt}";
+        var assetRoot = $@"{fileDir}\{info.Name}{fileExt}";
 
         switch (Smithbox.ProjectType)
         {
@@ -226,23 +212,7 @@ public static class ParticleBank
                 return;
         }
 
-        // Add folder if it does not exist in GameModDirectory
-        if (!Directory.Exists($"{Smithbox.ProjectRoot}\\{fileDir}\\"))
-        {
-            Directory.CreateDirectory($"{Smithbox.ProjectRoot}\\{fileDir}\\");
-        }
-
-        // Make a backup of the original file if a mod path doesn't exist
-        if (Smithbox.ProjectRoot == null && !File.Exists($@"{assetRoot}.bak") && File.Exists(assetRoot))
-        {
-            File.Copy(assetRoot, $@"{assetRoot}.bak", true);
-        }
-
-        if (fileBytes != null)
-        {
-            File.WriteAllBytes(assetMod, fileBytes);
-            //TaskLogs.AddLog($"Saved at: {assetMod}");
-        }
+        Utils.TrySaveFile(assetRoot, fileBytes);
     }
 
     public static void SaveResourceList(ResourceInfo info)
@@ -269,8 +239,7 @@ public static class ParticleBank
         BND4 writeBinder = parent.Binder as BND4;
         byte[] fileBytes = null;
 
-        var assetRoot = $@"{Smithbox.GameRoot}\{fileDir}\{info.Name}{fileExt}";
-        var assetMod = $@"{Smithbox.ProjectRoot}\{fileDir}\{info.Name}{fileExt}";
+        var assetRoot = $@"{fileDir}\{info.Name}{fileExt}";
 
         switch (Smithbox.ProjectType)
         {
@@ -291,22 +260,6 @@ public static class ParticleBank
                 return;
         }
 
-        // Add folder if it does not exist in GameModDirectory
-        if (!Directory.Exists($"{Smithbox.ProjectRoot}\\{fileDir}\\"))
-        {
-            Directory.CreateDirectory($"{Smithbox.ProjectRoot}\\{fileDir}\\");
-        }
-
-        // Make a backup of the original file if a mod path doesn't exist
-        if (Smithbox.ProjectRoot == null && !File.Exists($@"{assetRoot}.bak") && File.Exists(assetRoot))
-        {
-            File.Copy(assetRoot, $@"{assetRoot}.bak", true);
-        }
-
-        if (fileBytes != null)
-        {
-            File.WriteAllBytes(assetMod, fileBytes);
-            //TaskLogs.AddLog($"Saved at: {assetMod}");
-        }
+        Utils.TrySaveFile(assetRoot, fileBytes);
     }
 }

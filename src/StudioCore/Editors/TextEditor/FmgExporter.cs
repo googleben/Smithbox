@@ -34,11 +34,11 @@ public static class FmgExporter
         if (Smithbox.ProjectType is ProjectType.DES or ProjectType.DS1
             or ProjectType.DS1R)
         {
-            fmgBinder = BND3.Read(msgBndPath);
+            fmgBinder = BND3.Read(Smithbox.FS.GetFile(msgBndPath).GetData());
         }
         else
         {
-            fmgBinder = BND4.Read(msgBndPath);
+            fmgBinder = BND4.Read(Smithbox.FS.GetFile(msgBndPath).GetData());
         }
         foreach (var file in fmgBinder.Files)
         {

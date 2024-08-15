@@ -91,14 +91,10 @@ public static class DataExplorer
 
     private static void LoadMaps()
     {
-        var mapDir = $"{Smithbox.GameRoot}/map/mapstudio/";
+        var fs = TargetProject ? Smithbox.ProjectFS : Smithbox.VanillaFS;
+        var mapDir = $"/map/mapstudio/";
 
-        if (TargetProject)
-        {
-            mapDir = $"{Smithbox.ProjectRoot}/map/mapstudio/";
-        }
-
-        foreach (var entry in Directory.EnumerateFiles(mapDir))
+        foreach (var entry in fs.GetDirectory(mapDir).EnumerateFileNames())
         {
             if (entry.Contains(".msb.dcx"))
             {
@@ -115,7 +111,7 @@ public static class DataExplorer
         {
             foreach (var res in resMaps)
             {
-                var msb = MSBE.Read(res.AssetPath);
+                var msb = MSBE.Read(fs.GetFile(res.AssetPath).GetData());
 
                 var id = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(res.AssetPath));
                 maps.Add(id, msb);

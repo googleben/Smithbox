@@ -41,14 +41,10 @@ namespace StudioCore.Tools
 
         public static void GenerateTargetReport()
         {
-            var mapDir = $"{Smithbox.GameRoot}/map/mapstudio/";
+            var fs = TargetProject ? Smithbox.ProjectFS : Smithbox.VanillaFS;
+            var mapDir = "map/mapstudio/";
 
-            if (TargetProject)
-            {
-                mapDir = $"{Smithbox.ProjectRoot}/map/mapstudio/";
-            }
-
-            foreach (var entry in Directory.EnumerateFiles(mapDir))
+            foreach (var entry in fs.GetDirectory(mapDir).EnumerateFileNames())
             {
                 if (entry.Contains(".msb.dcx"))
                 {
@@ -66,7 +62,7 @@ namespace StudioCore.Tools
             {
                 foreach (var res in resMaps)
                 {
-                    var msb = MSBE.Read(res.AssetPath);
+                    var msb = MSBE.Read(fs.GetFile(res.AssetPath).GetData());
 
                     if (msb.Regions.WeatherOverrides.Count > 0)
                     {
@@ -86,14 +82,10 @@ namespace StudioCore.Tools
 
         public static void GenerateReport()
         {
-            var mapDir = $"{Smithbox.GameRoot}/map/mapstudio/";
+            var fs = TargetProject ? Smithbox.ProjectFS : Smithbox.VanillaFS;
+            var mapDir = "map/mapstudio/";
 
-            if (TargetProject)
-            {
-                mapDir = $"{Smithbox.ProjectRoot}/map/mapstudio/";
-            }
-
-            foreach (var entry in Directory.EnumerateFiles(mapDir))
+            foreach (var entry in fs.GetDirectory(mapDir).EnumerateFileNames())
             {
                 if (entry.Contains(".msb.dcx"))
                 {
@@ -111,7 +103,7 @@ namespace StudioCore.Tools
             {
                 foreach (var res in resMaps)
                 {
-                    var msb = MSBE.Read(res.AssetPath);
+                    var msb = MSBE.Read(fs.GetFile(res.AssetPath).GetData());
                     ProcessMap_ER(res.AssetName, msb);
                 }
             }

@@ -527,7 +527,7 @@ public class ParamEditorScreen : EditorScreen
                     {
                         if (PlatformUtils.Instance.OpenFileDialog("Select file containing params", allParamTypes, out var path))
                         {
-                            ParamBank.LoadAuxBank(path, null, null);
+                            //TODO ParamBank.LoadAuxBank(path, null, null);
                         }
                     }
                     else
@@ -560,7 +560,7 @@ public class ParamEditorScreen : EditorScreen
                                         "Select file containing enemyparam",
                                         new[] { FilterStrings.ParamLooseFilter }, out var enemyPath))
                                 {
-                                    ParamBank.LoadAuxBank(fpath, folder, enemyPath);
+                                    //TODO ParamBank.LoadAuxBank(fpath, folder, enemyPath);
                                 }
                             }
                         }

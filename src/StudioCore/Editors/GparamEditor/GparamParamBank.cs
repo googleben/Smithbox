@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Andre.IO.VFS;
+using Microsoft.Extensions.Logging;
 using SoulsFormats;
 using StudioCore.Core;
 using System;
@@ -74,32 +75,9 @@ public static class GparamParamBank
             paramExt = @".fltparam";
         }
 
-        var assetRoot = $@"{Smithbox.GameRoot}\{paramDir}\{info.Name}{paramExt}";
-        var assetMod = $@"{Smithbox.ProjectRoot}\{paramDir}\{info.Name}{paramExt}";
+        var assetRoot = $@"{paramDir}\{info.Name}{paramExt}";
 
-        if (Smithbox.ProjectRoot != "")
-        {
-            // Add drawparam folder if it does not exist in GameModDirectory
-            if (!Directory.Exists($"{Smithbox.ProjectRoot}\\{paramDir}\\"))
-            {
-                Directory.CreateDirectory($"{Smithbox.ProjectRoot}\\{paramDir}\\");
-            }
-
-            // Make a backup of the original file if a mod path doesn't exist
-            if (Smithbox.ProjectRoot == null && !File.Exists($@"{assetRoot}.bak") && File.Exists(assetRoot))
-            {
-                File.Copy(assetRoot, $@"{assetRoot}.bak", true);
-            }
-
-            if (fileBytes != null)
-            {
-                // Write to GameModDirectory
-                File.WriteAllBytes(assetMod, fileBytes);
-                //TaskLogs.AddLog($"Saved at: {assetMod}");
-            }
-
-            TaskLogs.AddLog($"Saved {info.Name} to {assetMod}");
-        }
+        Utils.TrySaveFile(assetRoot, fileBytes);
     }
 
     public static void LoadGraphicsParams()
@@ -109,6 +87,8 @@ public static class GparamParamBank
 
         ParamBank = new();
         VanillaParamBank = new();
+
+        var fs = Smithbox.FS;
 
         var paramDir = @"\param\drawparam";
         var paramExt = @".gparam.dcx";
@@ -125,22 +105,13 @@ public static class GparamParamBank
             return;
         }
 
-        foreach (var name in GetGparamFileNames())
+        foreach (var name in GetGparamFileNames(fs))
         {
             var filePath = $"{paramDir}\\{name}{paramExt}";
 
-            if(File.Exists($"{Smithbox.ProjectRoot}\\{filePath}"))
-            {
-                LoadGraphicsParam($"{Smithbox.ProjectRoot}\\{filePath}", true);
-                //TaskLogs.AddLog($"Loaded from GameModDirectory: {filePath}");
-            }
-            else
-            {
-                LoadGraphicsParam($"{Smithbox.GameRoot}\\{filePath}", false);
-                //TaskLogs.AddLog($"Loaded from GameRootDirectory: {filePath}");
-            }
+            LoadGraphicsParam($"{filePath}", true);
 
-            LoadVanillaGraphicsParam($"{Smithbox.GameRoot}\\{filePath}", false);
+            LoadVanillaGraphicsParam($"{filePath}", false);
         }
 
         IsLoaded = true;
@@ -151,6 +122,7 @@ public static class GparamParamBank
 
     private static void LoadGraphicsParam(string path, bool isModFile)
     {
+        var fs = Smithbox.FS;
         try
         {
             if (path == null)
@@ -173,11 +145,11 @@ public static class GparamParamBank
 
             if (Smithbox.ProjectType == ProjectType.DS2S || Smithbox.ProjectType == ProjectType.DS2)
             {
-                gStruct.Gparam = GPARAM.Read(path);
+                gStruct.Gparam = GPARAM.Read(fs.GetFile(path).GetData());
             }
             else
             {
-                gStruct.Gparam = GPARAM.Read(DCX.Decompress(path));
+                gStruct.Gparam = GPARAM.Read(DCX.Decompress(fs.GetFile(path).GetData()));
             }
 
             ParamBank.Add(name, gStruct);
@@ -190,6 +162,7 @@ public static class GparamParamBank
 
     private static void LoadVanillaGraphicsParam(string path, bool isModFile)
     {
+        var fs = Smithbox.VanillaFS;
         try
         {
             if (path == null)
@@ -212,11 +185,11 @@ public static class GparamParamBank
 
             if (Smithbox.ProjectType == ProjectType.DS2S || Smithbox.ProjectType == ProjectType.DS2)
             {
-                gStruct.Gparam = GPARAM.Read(path);
+                gStruct.Gparam = GPARAM.Read(fs.GetFile(path).GetData());
             }
             else
             {
-                gStruct.Gparam = GPARAM.Read(DCX.Decompress(path));
+                gStruct.Gparam = GPARAM.Read(DCX.Decompress(fs.GetFile(path).GetData()));
             }
 
             VanillaParamBank.Add(name, gStruct);
@@ -227,7 +200,7 @@ public static class GparamParamBank
         }
     }
 
-    public static List<string> GetGparamFileNames()
+    public static List<string> GetGparamFileNames(VirtualFileSystem fs)
     {
         var paramDir = @"\param\drawparam";
         var paramExt = @".gparam.dcx";
@@ -238,35 +211,15 @@ public static class GparamParamBank
             paramExt = @".fltparam";
         }
 
-        HashSet<string> paramNames = new();
         List<string> ret = new();
-
-        if (Directory.Exists(Smithbox.GameRoot + paramDir))
+        if (fs.DirectoryExists(paramDir))
         {
-            // ROOT
-            var paramFiles = Directory.GetFileSystemEntries(Smithbox.GameRoot + paramDir, $@"*{paramExt}").ToList();
-            foreach (var f in paramFiles)
+            var dir = fs.GetDirectory(paramDir)!;
+            foreach (var file in dir.EnumerateFileNames())
             {
-                var name = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(f));
+                if (!file.EndsWith(paramExt)) continue;
+                var name = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(file));
                 ret.Add(name);
-                paramNames.Add(name);
-            }
-
-            // MOD
-            if (Smithbox.ProjectRoot != null && Directory.Exists(Smithbox.ProjectRoot + paramDir))
-            {
-                paramFiles = Directory.GetFileSystemEntries(Smithbox.ProjectRoot + paramDir, $@"*{paramExt}").ToList();
-
-                foreach (var f in paramFiles)
-                {
-                    var name = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(f));
-
-                    if (!paramNames.Contains(name))
-                    {
-                        ret.Add(name);
-                        paramNames.Add(name);
-                    }
-                }
             }
         }
 

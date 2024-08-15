@@ -69,11 +69,11 @@ public class FMGFileSet
 
         if (Smithbox.ProjectType is ProjectType.DES or ProjectType.DS1 or ProjectType.DS1R)
         {
-            fmgBinder = BND3.Read(path);
+            fmgBinder = BND3.Read(Smithbox.FS.GetFile(path).GetData());
         }
         else
         {
-            fmgBinder = BND4.Read(path);
+            fmgBinder = BND4.Read(Smithbox.FS.GetFile(path).GetData());
         }
 
         foreach (BinderFile file in fmgBinder.Files)
@@ -167,7 +167,7 @@ public class FMGFileSet
     internal FMGInfo GenerateFMGInfoDS2(string file)
     {
         // TODO: DS2 FMG grouping & UI sorting (copy SetFMGInfo)
-        FMG fmg = FMG.Read(file);
+        FMG fmg = FMG.Read(Smithbox.FS.GetFile(file).GetData());
         var name = Path.GetFileNameWithoutExtension(file);
         FMGInfo info = new()
         {

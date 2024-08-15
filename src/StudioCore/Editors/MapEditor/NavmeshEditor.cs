@@ -121,13 +121,12 @@ public class NavmeshEditor
                         _previewMesh.World = mrp.World;
 
                         // Do a test save
-                        var path = $@"{Smithbox.ProjectRoot}\navout\test.hkx";
-                        using (FileStream s2 = File.Create(path))
-                        {
-                            BinaryWriterEx bw = new(false, s2);
-                            var s = new PackFileSerializer();
-                            s.Serialize(built, bw);
-                        }
+                        
+                        var path = $@"navout\test.hkx";
+                        BinaryWriterEx bw = new(false);
+                        var s = new PackFileSerializer();
+                        s.Serialize(built, bw);
+                        Smithbox.ProjectFS.WriteFile(path, bw.FinishBytes());
 
                         /*vcount = NavGen.GetMeshVertCount();
                         icount = NavGen.GetMeshTriCount();

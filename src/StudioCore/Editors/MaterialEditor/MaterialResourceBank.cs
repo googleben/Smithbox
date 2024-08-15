@@ -1,4 +1,5 @@
-﻿using SoulsFormats;
+﻿using Andre.IO.VFS;
+using SoulsFormats;
 using StudioCore.Core;
 using StudioCore.Editor;
 using System;
@@ -33,39 +34,31 @@ public class MaterialResourceBank
     public void LoadMatBins()
     {
         _matbins = new Dictionary<string, MaterialInfo>();
-
-        var modPath = $"{Smithbox.ProjectRoot}//material//";
-        if (Directory.Exists(modPath))
+        string dir = "material/";
+        if (Smithbox.ProjectFS.TryGetDirectory(dir, out var vd))
         {
-            var modFiles = Directory.GetFiles(modPath);
-
-            // Mod
-            foreach (var file in modFiles)
+            foreach (var file in vd.EnumerateFileNames())
             {
-                LoadMatbinFile(file);
+                LoadMatbinFile(dir+file, Smithbox.ProjectFS);
             }
         }
 
-        var rootPath = $"{Smithbox.GameRoot}//material//";
-        if (Directory.Exists(rootPath))
+        if (Smithbox.VanillaFS.TryGetDirectory(dir, out vd))
         {
-            var rootFiles = Directory.GetFiles(rootPath);
-
-            // Root
-            foreach (var file in rootFiles)
+            foreach (var file in vd.EnumerateFileNames())
             {
-                LoadMatbinFile(file);
+                LoadMatbinFile(dir+file, Smithbox.VanillaFS);
             }
         }
     }
 
-    public void LoadMatbinFile(string file)
+    public void LoadMatbinFile(string file, VirtualFileSystem fs)
     {
         IBinder binder = null;
 
         if (file.Contains(".matbinbnd.dcx"))
         {
-            binder = BND4.Read(file);
+            binder = BND4.Read(fs.GetFile(file).GetData());
             using (binder)
             {
                 foreach (BinderFile f in binder.Files)
@@ -85,39 +78,31 @@ public class MaterialResourceBank
     public void LoadMtds()
     {
         _mtds = new Dictionary<string, MaterialInfo>();
-
-        var modPath = $"{Smithbox.ProjectRoot}//mtd//";
-        if (Directory.Exists(modPath))
+        string dir = "mtd/";
+        if (Smithbox.ProjectFS.TryGetDirectory(dir, out var vd))
         {
-            var modFiles = Directory.GetFiles(modPath);
-
-            // Mod
-            foreach (var file in modFiles)
+            foreach (var file in vd.EnumerateFileNames())
             {
-                LoadMtdFile(file);
+                LoadMtdFile(dir+file, Smithbox.ProjectFS);
             }
         }
-
-        var rootPath = $"{Smithbox.GameRoot}//mtd//";
-        if (Directory.Exists(rootPath))
+        
+        if (Smithbox.VanillaFS.TryGetDirectory(dir, out vd))
         {
-            var rootFiles = Directory.GetFiles(rootPath);
-
-            // Root
-            foreach (var file in rootFiles)
+            foreach (var file in vd.EnumerateFileNames())
             {
-                LoadMtdFile(file);
+                LoadMtdFile(dir+file, Smithbox.VanillaFS);
             }
         }
     }
 
-    public void LoadMtdFile(string file)
+    public void LoadMtdFile(string file, VirtualFileSystem fs)
     {
         IBinder binder = null;
 
         if (file.Contains(".mtd.dcx"))
         {
-            binder = BND4.Read(file);
+            binder = BND4.Read(fs.GetFile(file).GetData());
             using (binder)
             {
                 foreach (BinderFile f in binder.Files)

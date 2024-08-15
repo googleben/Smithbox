@@ -712,7 +712,7 @@ public class Universe
 
             if (Smithbox.ProjectType == ProjectType.DS2S || Smithbox.ProjectType == ProjectType.DS2)
             {
-                using var bdt = BXF4.Read(ad.AssetPath, ad.AssetPath[..^3] + "bdt");
+                using var bdt = BXF4.Read(Smithbox.FS.GetFile(ad.AssetPath).GetData(), Smithbox.FS.GetFile(ad.AssetPath[..^3] + "bdt").GetData());
                 BinderFile file = bdt.Files.Find(f => f.Name.EndsWith("light.btl.dcx"));
                 if (file == null)
                 {
@@ -723,7 +723,7 @@ public class Universe
             }
             else
             {
-                btl = BTL.Read(ad.AssetPath);
+                btl = BTL.Read(Smithbox.FS.GetFile(ad.AssetPath).GetData());
             }
 
             return btl;
@@ -965,37 +965,37 @@ public class Universe
         // Load all the params
         ResourceDescriptor regparamad = ParamLocator.GetDS2GeneratorRegistParam(map.Name);
         ResourceDescriptor regparamadw = ParamLocator.GetDS2GeneratorRegistParam(map.Name, true);
-        Param regparam = Param.Read(regparamad.AssetPath);
+        Param regparam = Param.Read(Smithbox.FS.GetFile(regparamad.AssetPath).GetData());
         PARAMDEF reglayout = ParamLocator.GetParamdefForParam(regparam.ParamType);
         regparam.ApplyParamdef(reglayout);
 
         ResourceDescriptor locparamad = ParamLocator.GetDS2GeneratorLocationParam(map.Name);
         ResourceDescriptor locparamadw = ParamLocator.GetDS2GeneratorLocationParam(map.Name, true);
-        Param locparam = Param.Read(locparamad.AssetPath);
+        Param locparam = Param.Read(Smithbox.FS.GetFile(locparamad.AssetPath).GetData());
         PARAMDEF loclayout = ParamLocator.GetParamdefForParam(locparam.ParamType);
         locparam.ApplyParamdef(loclayout);
 
         ResourceDescriptor genparamad = ParamLocator.GetDS2GeneratorParam(map.Name);
         ResourceDescriptor genparamadw = ParamLocator.GetDS2GeneratorParam(map.Name, true);
-        Param genparam = Param.Read(genparamad.AssetPath);
+        Param genparam = Param.Read(Smithbox.FS.GetFile(genparamad.AssetPath).GetData());
         PARAMDEF genlayout = ParamLocator.GetParamdefForParam(genparam.ParamType);
         genparam.ApplyParamdef(genlayout);
 
         ResourceDescriptor evtparamad = ParamLocator.GetDS2EventParam(map.Name);
         ResourceDescriptor evtparamadw = ParamLocator.GetDS2EventParam(map.Name, true);
-        Param evtparam = Param.Read(evtparamad.AssetPath);
+        Param evtparam = Param.Read(Smithbox.FS.GetFile(evtparamad.AssetPath).GetData());
         PARAMDEF evtlayout = ParamLocator.GetParamdefForParam(evtparam.ParamType);
         evtparam.ApplyParamdef(evtlayout);
 
         ResourceDescriptor evtlparamad = ParamLocator.GetDS2EventLocationParam(map.Name);
         ResourceDescriptor evtlparamadw = ParamLocator.GetDS2EventLocationParam(map.Name, true);
-        Param evtlparam = Param.Read(evtlparamad.AssetPath);
+        Param evtlparam = Param.Read(Smithbox.FS.GetFile(evtlparamad.AssetPath).GetData());
         PARAMDEF evtllayout = ParamLocator.GetParamdefForParam(evtlparam.ParamType);
         evtlparam.ApplyParamdef(evtllayout);
 
         ResourceDescriptor objparamad = ParamLocator.GetDS2ObjInstanceParam(map.Name);
         ResourceDescriptor objparamadw = ParamLocator.GetDS2ObjInstanceParam(map.Name, true);
-        Param objparam = Param.Read(objparamad.AssetPath);
+        Param objparam = Param.Read(Smithbox.FS.GetFile(objparamad.AssetPath).GetData());
         PARAMDEF objlayout = ParamLocator.GetParamdefForParam(objparam.ParamType);
         objparam.ApplyParamdef(objlayout);
 
@@ -1033,129 +1033,27 @@ public class Universe
             return;
         }
 
-        // Create a param directory if it does not exist
-        if (!Directory.Exists(Path.GetDirectoryName(regparamadw.AssetPath)))
-        {
-            Directory.CreateDirectory(Path.GetDirectoryName(regparamadw.AssetPath));
-        }
-
         // Save all the params
-        if (File.Exists(regparamadw.AssetPath + ".temp"))
-        {
-            File.Delete(regparamadw.AssetPath + ".temp");
-        }
+        var fs = Utils.GetFSForWrites();
 
-        regparam.Write(regparamadw.AssetPath + ".temp", DCX.Type.None);
-        if (File.Exists(regparamadw.AssetPath))
+        void SafeWrite<T>(ResourceDescriptor rd, SoulsFile<T> f) where T : SoulsFile<T>, new()
         {
-            if (!File.Exists(regparamadw.AssetPath + ".bak"))
+            fs.WriteFile(rd.AssetPath+".temp", f.Write(DCX.Type.None));
+            if (fs.FileExists(rd.AssetPath))
             {
-                File.Copy(regparamadw.AssetPath, regparamadw.AssetPath + ".bak", true);
+                if (!fs.FileExists(rd.AssetPath+".bak"))
+                    fs.Copy(rd.AssetPath, rd.AssetPath+".bak");
+                fs.Copy(rd.AssetPath, rd.AssetPath+".prev");
             }
-
-            File.Copy(regparamadw.AssetPath, regparamadw.AssetPath + ".prev", true);
-            File.Delete(regparamadw.AssetPath);
+            fs.Move(rd.AssetPath+".temp", rd.AssetPath);
         }
-
-        File.Move(regparamadw.AssetPath + ".temp", regparamadw.AssetPath);
-
-        if (File.Exists(locparamadw.AssetPath + ".temp"))
-        {
-            File.Delete(locparamadw.AssetPath + ".temp");
-        }
-
-        locparam.Write(locparamadw.AssetPath + ".temp", DCX.Type.None);
-        if (File.Exists(locparamadw.AssetPath))
-        {
-            if (!File.Exists(locparamadw.AssetPath + ".bak"))
-            {
-                File.Copy(locparamadw.AssetPath, locparamadw.AssetPath + ".bak", true);
-            }
-
-            File.Copy(locparamadw.AssetPath, locparamadw.AssetPath + ".prev", true);
-            File.Delete(locparamadw.AssetPath);
-        }
-
-        File.Move(locparamadw.AssetPath + ".temp", locparamadw.AssetPath);
-
-        if (File.Exists(genparamadw.AssetPath + ".temp"))
-        {
-            File.Delete(genparamadw.AssetPath + ".temp");
-        }
-
-        genparam.Write(genparamadw.AssetPath + ".temp", DCX.Type.None);
-        if (File.Exists(genparamadw.AssetPath))
-        {
-            if (!File.Exists(genparamadw.AssetPath + ".bak"))
-            {
-                File.Copy(genparamadw.AssetPath, genparamadw.AssetPath + ".bak", true);
-            }
-
-            File.Copy(genparamadw.AssetPath, genparamadw.AssetPath + ".prev", true);
-            File.Delete(genparamadw.AssetPath);
-        }
-
-        File.Move(genparamadw.AssetPath + ".temp", genparamadw.AssetPath);
-
-        // Events
-        if (File.Exists(evtparamadw.AssetPath + ".temp"))
-        {
-            File.Delete(evtparamadw.AssetPath + ".temp");
-        }
-
-        evtparam.Write(evtparamadw.AssetPath + ".temp", DCX.Type.None);
-        if (File.Exists(evtparamadw.AssetPath))
-        {
-            if (!File.Exists(evtparamadw.AssetPath + ".bak"))
-            {
-                File.Copy(evtparamadw.AssetPath, evtparamadw.AssetPath + ".bak", true);
-            }
-
-            File.Copy(evtparamadw.AssetPath, evtparamadw.AssetPath + ".prev", true);
-            File.Delete(evtparamadw.AssetPath);
-        }
-
-        File.Move(evtparamadw.AssetPath + ".temp", evtparamadw.AssetPath);
-
-        // Event regions
-        if (File.Exists(evtlparamadw.AssetPath + ".temp"))
-        {
-            File.Delete(evtlparamadw.AssetPath + ".temp");
-        }
-
-        evtlparam.Write(evtlparamadw.AssetPath + ".temp", DCX.Type.None);
-        if (File.Exists(evtlparamadw.AssetPath))
-        {
-            if (!File.Exists(evtlparamadw.AssetPath + ".bak"))
-            {
-                File.Copy(evtlparamadw.AssetPath, evtlparamadw.AssetPath + ".bak", true);
-            }
-
-            File.Copy(evtlparamadw.AssetPath, evtlparamadw.AssetPath + ".prev", true);
-            File.Delete(evtlparamadw.AssetPath);
-        }
-
-        File.Move(evtlparamadw.AssetPath + ".temp", evtlparamadw.AssetPath);
-
-        // Object instances
-        if (File.Exists(objparamadw.AssetPath + ".temp"))
-        {
-            File.Delete(objparamadw.AssetPath + ".temp");
-        }
-
-        objparam.Write(objparamadw.AssetPath + ".temp", DCX.Type.None);
-        if (File.Exists(objparamadw.AssetPath))
-        {
-            if (!File.Exists(objparamadw.AssetPath + ".bak"))
-            {
-                File.Copy(objparamadw.AssetPath, objparamadw.AssetPath + ".bak", true);
-            }
-
-            File.Copy(objparamadw.AssetPath, objparamadw.AssetPath + ".prev", true);
-            File.Delete(objparamadw.AssetPath);
-        }
-
-        File.Move(objparamadw.AssetPath + ".temp", objparamadw.AssetPath);
+        
+        SafeWrite(regparamadw, regparam);
+        SafeWrite(locparamadw, locparam);
+        SafeWrite(genparamadw, genparam);
+        SafeWrite(evtparamadw, evtparam);
+        SafeWrite(evtlparamadw, evtlparam);
+        SafeWrite(objparamadw, objparam);
     }
 
     private DCX.Type GetCompressionType()
@@ -1206,7 +1104,7 @@ public class Universe
         {
             for (var i = 0; i < BTLs.Count; i++)
             {
-                using var bdt = BXF4.Read(BTLs[i].AssetPath, BTLs[i].AssetPath[..^3] + "bdt");
+                using var bdt = BXF4.Read(Smithbox.FS.GetFile(BTLs[i].AssetPath).GetData(), Smithbox.FS.GetFile(BTLs[i].AssetPath[..^3] + "bdt").GetData());
                 BinderFile file = bdt.Files.Find(f => f.Name.EndsWith("light.btl.dcx"));
                 var btl = BTL.Read(file.Bytes);
                 if (btl != null)
@@ -1260,7 +1158,7 @@ public class Universe
             DCX.Type compressionType = GetCompressionType();
             if (Smithbox.ProjectType == ProjectType.DS3)
             {
-                var prev = MSB3.Read(ad.AssetPath);
+                var prev = MSB3.Read(Smithbox.FS.GetFile(ad.AssetPath).GetData());
                 MSB3 n = new();
                 n.PartsPoses = prev.PartsPoses;
                 n.Layers = prev.Layers;
@@ -1269,7 +1167,7 @@ public class Universe
             }
             else if (Smithbox.ProjectType == ProjectType.ER)
             {
-                var prev = MSBE.Read(ad.AssetPath);
+                var prev = MSBE.Read(Smithbox.FS.GetFile(ad.AssetPath).GetData());
                 MSBE n = new();
                 n.Layers = prev.Layers;
                 n.Routes = prev.Routes;
@@ -1277,7 +1175,7 @@ public class Universe
             }
             else if (Smithbox.ProjectType == ProjectType.AC6)
             {
-                var prev = MSB_AC6.Read(ad.AssetPath);
+                var prev = MSB_AC6.Read(Smithbox.FS.GetFile(ad.AssetPath).GetData());
                 MSB_AC6 n = new();
                 n.Layers = prev.Layers;
                 n.Routes = prev.Routes;
@@ -1285,14 +1183,14 @@ public class Universe
             }
             else if (Smithbox.ProjectType == ProjectType.DS2S || Smithbox.ProjectType == ProjectType.DS2)
             {
-                var prev = MSB2.Read(ad.AssetPath);
+                var prev = MSB2.Read(Smithbox.FS.GetFile(ad.AssetPath).GetData());
                 MSB2 n = new();
                 n.PartPoses = prev.PartPoses;
                 msb = n;
             }
             else if (Smithbox.ProjectType == ProjectType.SDT)
             {
-                var prev = MSBS.Read(ad.AssetPath);
+                var prev = MSBS.Read(Smithbox.FS.GetFile(ad.AssetPath).GetData());
                 MSBS n = new();
                 n.PartsPoses = prev.PartsPoses;
                 n.Layers = prev.Layers;
@@ -1305,7 +1203,7 @@ public class Universe
             }
             else if (Smithbox.ProjectType == ProjectType.DES)
             {
-                var prev = MSBD.Read(ad.AssetPath);
+                var prev = MSBD.Read(Smithbox.FS.GetFile(ad.AssetPath).GetData());
                 MSBD n = new();
                 n.Trees = prev.Trees;
                 msb = n;
@@ -1313,51 +1211,27 @@ public class Universe
             else
             {
                 msb = new MSB1();
-                //var t = MSB1.Read(ad.AssetPath);
+                //var t = MSB1.Read(Smithbox.FS.GetFile(ad.AssetPath).GetData());
                 //((MSB1)msb).Models = t.Models;
             }
 
             map.SerializeToMSB(msb, Smithbox.ProjectType);
 
-            // Create the map directory if it doesn't exist
-            if (!Directory.Exists(Path.GetDirectoryName(adw.AssetPath)))
-            {
-                Directory.CreateDirectory(Path.GetDirectoryName(adw.AssetPath));
-            }
-
             // Write as a temporary file to make sure there are no errors before overwriting current file 
             var mapPath = adw.AssetPath;
-            //if (GetModProjectPathForFile(mapPath) != null)
-            //{
-            //    mapPath = GetModProjectPathForFile(mapPath);
-            //}
+            var fs = Utils.GetFSForWrites();
 
-            // If a backup file doesn't exist of the original file create it
-            if (!File.Exists(mapPath + ".bak") && File.Exists(mapPath))
+            if (!fs.FileExists(mapPath + ".bak") && fs.FileExists(mapPath))
             {
-                File.Copy(mapPath, mapPath + ".bak", true);
+                fs.Copy(mapPath, mapPath+".bak");
             }
-
-            if (File.Exists(mapPath + ".temp"))
+            
+            fs.WriteFile(mapPath+".temp", msb.Write(compressionType));
+            if (fs.FileExists(mapPath))
             {
-                File.Delete(mapPath + ".temp");
+                fs.Copy(mapPath, mapPath+".prev");
             }
-
-            msb.Write(mapPath + ".temp", compressionType);
-
-            // Make a copy of the previous map
-            if (File.Exists(mapPath))
-            {
-                File.Copy(mapPath, mapPath + ".prev", true);
-            }
-
-            // Move temp file as new map file
-            if (File.Exists(mapPath))
-            {
-                File.Delete(mapPath);
-            }
-
-            File.Move(mapPath + ".temp", mapPath);
+            fs.Move(mapPath+".temp", mapPath);
 
             if (Smithbox.ProjectType == ProjectType.DS2S || Smithbox.ProjectType == ProjectType.DS2)
             {
