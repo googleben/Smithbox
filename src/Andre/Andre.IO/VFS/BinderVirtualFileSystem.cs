@@ -78,7 +78,16 @@ namespace Andre.IO.VFS
                 .Select(bhd => new BinderArchive(bhd, bhd.Replace("_decrypted.bhd", ".bdt"), BHD5.Game.EldenRing))
                 .ToArray();
             var dictionary = new BhdDictionary(File.ReadAllText(@"Resources\EldenRingDictionary.txt"), BHD5.Game.EldenRing);
-            return new BinderVirtualFileSystem(binders, dictionary);
+            return new(binders, dictionary);
+        }
+
+        public static BinderVirtualFileSystem FromDS2(string folder)
+        {
+            var binders = Directory.GetFiles(folder, "*_decrypted.bhd", SearchOption.AllDirectories)
+                .Select(bhd => new BinderArchive(bhd, bhd.Replace("_decrypted.bhd", ".bdt"), BHD5.Game.DarkSouls2))
+                .ToArray();
+            var dictionary = new BhdDictionary(File.ReadAllText(@"Resources\DarkSouls2Dictionary.txt"), BHD5.Game.DarkSouls2);
+            return new(binders, dictionary);
         }
 
         public static BinderVirtualFileSystem FromGameFolder(string folder, BHD5.Game game)
@@ -86,6 +95,7 @@ namespace Andre.IO.VFS
             return game switch
             {
                 BHD5.Game.EldenRing => FromEldenRing(folder),
+                BHD5.Game.DarkSouls2 => FromDS2(folder),
                 _ => throw new NotImplementedException()
             };
         }

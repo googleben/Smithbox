@@ -1,4 +1,5 @@
-﻿using ImGuiNET;
+﻿using Andre.IO.VFS;
+using ImGuiNET;
 using Microsoft.Extensions.Logging;
 using SoulsFormats;
 using StudioCore.Scene;
@@ -650,7 +651,8 @@ public static class ResourceManager
                 var curBinderFilename = Path.GetFileNameWithoutExtension($@"{f.Name}.blah");
 
                 if (curBinderFilename.Length > 0)
-                    curFileBinderPath = $@"{BinderVirtualPath}/{curBinderFilename}";
+                    curFileBinderPath = BinderPath.Combine(BinderVirtualPath, curBinderFilename);
+                    //curFileBinderPath = $@"{BinderVirtualPath}/{curBinderFilename}";
 
                 // Skip entry if entry Path is not in AssetWhitelist
                 if (AssetWhitelist != null && !AssetWhitelist.Contains(curFileBinderPath))

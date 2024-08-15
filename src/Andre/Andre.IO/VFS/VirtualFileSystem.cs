@@ -115,6 +115,15 @@ public abstract class VirtualFileSystem
     public IEnumerable<string> GetFileNamesMatching(string directoryPath, [StringSyntax(StringSyntaxAttribute.Regex)] string regex)
         => GetDirectory(directoryPath)?.GetFileNamesMatching(regex).Select(p => Path.Combine(directoryPath, p)) ?? Array.Empty<string>();
 
+    /// <summary>
+    /// Equivalent to Directory.GetFileSystemEntries
+    /// </summary>
+    /// <param name="directoryPath"></param>
+    /// <param name="regex"></param>
+    /// <returns></returns>
+    public IEnumerable<string> GetFileSystemEntriesMatching(string directoryPath, [StringSyntax(StringSyntaxAttribute.Regex)] string regex)
+        => GetDirectory(directoryPath)?.GetFileSystemEntriesMatching(regex).Select(p => Path.Combine(directoryPath, p)) ?? Array.Empty<string>();
+    
     public IEnumerable<string> GetFileNamesMatchingRecursive(string directoryPath,
         [StringSyntax(StringSyntaxAttribute.Regex)] string regex)
     {
@@ -127,6 +136,26 @@ public abstract class VirtualFileSystem
             var (curr, currDir) = pathStack[^1];
             pathStack.RemoveAt(pathStack.Count-1);
             ans.AddRange(currDir.GetFileNamesMatching(regex).Select(p => Path.Combine(curr, p)));
+            foreach (var (n, d) in currDir.EnumerateDirectories())
+            {
+                pathStack.Add((Path.Combine(curr, n), d));
+            }
+        }
+
+        return ans;
+    }
+    public IEnumerable<string> GetFileSystemEntriesMatchingRecursive(string directoryPath,
+        [StringSyntax(StringSyntaxAttribute.Regex)] string regex)
+    {
+        var dir = GetDirectory(directoryPath);
+        var ans = dir.GetFileSystemEntriesMatching(regex).Select(p => Path.Combine(directoryPath, p)).ToList();
+        
+        List<(string, VirtualDirectory)> pathStack = [(directoryPath, dir)];
+        while (pathStack.Count != 0)
+        {
+            var (curr, currDir) = pathStack[^1];
+            pathStack.RemoveAt(pathStack.Count-1);
+            ans.AddRange(currDir.GetFileSystemEntriesMatching(regex).Select(p => Path.Combine(curr, p)));
             foreach (var (n, d) in currDir.EnumerateDirectories())
             {
                 pathStack.Add((Path.Combine(curr, n), d));
@@ -288,6 +317,10 @@ public abstract class VirtualDirectory
 
     public IEnumerable<string> GetFileNamesMatching([StringSyntax(StringSyntaxAttribute.Regex)] string regex) => 
         EnumerateFileNames().Where(s => Regex.IsMatch(s, regex));
+    
+    
+    public IEnumerable<string> GetFileSystemEntriesMatching([StringSyntax(StringSyntaxAttribute.Regex)] string regex) => 
+        EnumerateFileNames().Concat(EnumerateDirectoryNames()).Where(s => Regex.IsMatch(s, regex));
 
     #region WritingOperations
     

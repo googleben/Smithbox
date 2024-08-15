@@ -48,12 +48,8 @@ public class GlobalModelSearch
 
             resMaps = new List<ResourceDescriptor>();
 
-            var mapDir = $"{Smithbox.GameRoot}/map/mapstudio/";
-
-            if (_targetProjectFiles)
-            {
-                mapDir = $"{Smithbox.ProjectRoot}/map/mapstudio/";
-            }
+            var mapDir = $"map/mapstudio/";
+            var fs = _targetProjectFiles ? Smithbox.ProjectFS : Smithbox.VanillaFS;
 
             foreach (var entry in Directory.EnumerateFiles(mapDir))
             {
@@ -73,7 +69,7 @@ public class GlobalModelSearch
                 foreach (var res in resMaps)
                 {
                     var name = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(res.AssetPath));
-                    var msb = MSBD.Read(res.AssetPath);
+                    var msb = MSBD.Read(fs.ReadFile(res.AssetPath).Value);
 
                     if(!MapList.ContainsKey(name))
                         MapList.Add(name, msb);
@@ -84,7 +80,7 @@ public class GlobalModelSearch
                 foreach (var res in resMaps)
                 {
                     var name = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(res.AssetPath));
-                    var msb = MSB1.Read(res.AssetPath);
+                    var msb = MSB1.Read(fs.ReadFile(res.AssetPath).Value);
 
                     if (!MapList.ContainsKey(name))
                         MapList.Add(name, msb);
@@ -95,7 +91,7 @@ public class GlobalModelSearch
                 foreach (var res in resMaps)
                 {
                     var name = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(res.AssetPath));
-                    var msb = MSB2.Read(res.AssetPath);
+                    var msb = MSB2.Read(fs.ReadFile(res.AssetPath).Value);
 
                     if (!MapList.ContainsKey(name))
                         MapList.Add(name, msb);
@@ -106,7 +102,7 @@ public class GlobalModelSearch
                 foreach (var res in resMaps)
                 {
                     var name = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(res.AssetPath));
-                    var msb = MSB3.Read(res.AssetPath);
+                    var msb = MSB3.Read(fs.ReadFile(res.AssetPath).Value);
 
                     if (!MapList.ContainsKey(name))
                         MapList.Add(name, msb);
@@ -117,7 +113,7 @@ public class GlobalModelSearch
                 foreach (var res in resMaps)
                 {
                     var name = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(res.AssetPath));
-                    var msb = MSBB.Read(res.AssetPath);
+                    var msb = MSBB.Read(fs.ReadFile(res.AssetPath).Value);
 
                     if (!MapList.ContainsKey(name))
                         MapList.Add(name, msb);
@@ -128,7 +124,7 @@ public class GlobalModelSearch
                 foreach (var res in resMaps)
                 {
                     var name = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(res.AssetPath));
-                    var msb = MSBS.Read(res.AssetPath);
+                    var msb = MSBS.Read(fs.ReadFile(res.AssetPath).Value);
 
                     if (!MapList.ContainsKey(name))
                         MapList.Add(name, msb);
@@ -139,7 +135,7 @@ public class GlobalModelSearch
                 foreach (var res in resMaps)
                 {
                     var name = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(res.AssetPath));
-                    var msb = MSBE.Read(res.AssetPath);
+                    var msb = MSBE.Read(fs.ReadFile(res.AssetPath).Value);
 
                     if (!MapList.ContainsKey(name))
                         MapList.Add(name, msb);
@@ -150,7 +146,7 @@ public class GlobalModelSearch
                 foreach (var res in resMaps)
                 {
                     var name = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(res.AssetPath));
-                    var msb = MSB_AC6.Read(res.AssetPath);
+                    var msb = MSB_AC6.Read(fs.ReadFile(res.AssetPath).Value);
 
                     if (!MapList.ContainsKey(name))
                         MapList.Add(name, msb);

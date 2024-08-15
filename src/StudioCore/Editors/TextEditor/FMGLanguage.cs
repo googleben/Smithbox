@@ -94,8 +94,9 @@ public class FMGLanguage
             return false;
         }
 
-        List<string> files = Directory
-            .GetFileSystemEntries($@"{Smithbox.GameRoot}\{desc.AssetPath}", @"*.fmg").ToList();
+        List<string> files = Smithbox.FS.GetFileNamesMatching(desc.AssetPath, ".*\\.fmg").ToList();
+            //Directory
+            //.GetFileSystemEntries($@"{Smithbox.GameRoot}\{desc.AssetPath}", @"*.fmg").ToList();
 
         FMGFileSet looseMsg = new FMGFileSet(FmgFileCategory.Loose);
         if (looseMsg.LoadLooseMsgsDS2(files))

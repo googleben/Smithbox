@@ -258,7 +258,9 @@ namespace StudioCore.Editors.MapEditor
 
                 if (Smithbox.ProjectType == ProjectType.DS2S || Smithbox.ProjectType == ProjectType.DS2)
                 {
-                    using var bdt = BXF4.Read(ad.AssetPath, ad.AssetPath[..^3] + "bdt");
+                    var bhdb = Smithbox.FS.ReadFile(ad.AssetPath).Value;
+                    var bdtb = Smithbox.FS.ReadFile(ad.AssetPath[..^3] + "bdt").Value;
+                    using var bdt = BXF4.Read(bhdb, bdtb);
                     BinderFile file = bdt.Files.Find(f => f.Name.EndsWith("light.btl.dcx"));
                     if (file == null)
                     {

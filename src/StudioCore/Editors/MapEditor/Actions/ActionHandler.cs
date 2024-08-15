@@ -1236,12 +1236,12 @@ public class ActionHandler
 
     public void ApplyEntityGroupIdChange(string mapid)
     {
-        var filepath = $"{Smithbox.ProjectRoot}\\map\\MapStudio\\{mapid}.msb.dcx";
+        var filepath = $"map\\MapStudio\\{mapid}.msb.dcx";
 
         // Armored Core
         if (Smithbox.ProjectType == ProjectType.AC6)
         {
-            MSB_AC6 map = MSB_AC6.Read(filepath);
+            MSB_AC6 map = MSB_AC6.Read(Smithbox.FS.ReadFile(filepath).Value);
 
             // Enemies
             foreach (var part in map.Parts.Enemies)
@@ -1301,7 +1301,7 @@ public class ActionHandler
         // Elden Ring
         if (Smithbox.ProjectType == ProjectType.ER)
         {
-            MSBE map = MSBE.Read(filepath);
+            MSBE map = MSBE.Read(Smithbox.FS.ReadFile(filepath).Value);
 
             // Enemies
             foreach (var part in map.Parts.Enemies)
@@ -1361,7 +1361,7 @@ public class ActionHandler
         // Sekiro
         if (Smithbox.ProjectType == ProjectType.SDT)
         {
-            MSBS map = MSBS.Read(filepath);
+            MSBS map = MSBS.Read(Smithbox.FS.ReadFile(filepath).Value);
 
             // Enemies
             foreach (var part in map.Parts.Enemies)
@@ -1421,7 +1421,7 @@ public class ActionHandler
         // DS3
         if (Smithbox.ProjectType == ProjectType.DS3)
         {
-            MSB3 map = MSB3.Read(filepath);
+            MSB3 map = MSB3.Read(Smithbox.FS.ReadFile(filepath).Value);
 
             // Enemies
             foreach (var part in map.Parts.Enemies)

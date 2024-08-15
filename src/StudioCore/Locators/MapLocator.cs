@@ -207,7 +207,7 @@ public static class MapLocator
         // DS2 has its own structure for msbs, where they are all inside individual folders
         if (Smithbox.ProjectType == ProjectType.DS2S || Smithbox.ProjectType == ProjectType.DS2)
         {
-            Smithbox.FS.GetFileNamesMatching(@"\map", @"m.*")
+            Smithbox.FS.GetFileSystemEntriesMatching(@"\map", @"m.*")
                 .Select(Path.GetFileNameWithoutExtension)
                 .ToList().ForEach(s => mapSet.Add(s));
         }
