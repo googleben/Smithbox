@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using SoulsFormats;
+using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
 
@@ -43,6 +44,9 @@ public abstract class VirtualFileSystem
     public bool TryGetFile(string path, [MaybeNullWhen(false)] out VirtualFile file) 
         => TryGetFile(new VFSPath(path), out file);
 
+    public T ReadSoulsFile<T>(string path) where T : SoulsFile<T>, new()
+        => SoulsFile<T>.Read(ReadFile(path).Value);
+    
     public Memory<byte>? ReadFile(string path)
         => GetFile(path)?.GetData();
     
