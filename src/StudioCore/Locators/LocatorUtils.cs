@@ -112,6 +112,12 @@ public static class LocatorUtils
 
     public static string GetAssetPath(string relpath)
     {
+        if (Smithbox.FS.FileExists(relpath))
+            return relpath;
+        if (Smithbox.FS.FileExists(relpath + ".dcx"))
+            return relpath + ".dcx";
+        //throw new Exception($"Failed to locate file {relpath}");
+        TaskLogs.AddLog($"Failed to locate file {relpath}", LogLevel.Warning);
         return relpath;
         //TODO
         if (Smithbox.ProjectRoot != null)

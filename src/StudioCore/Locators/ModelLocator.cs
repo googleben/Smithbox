@@ -79,18 +79,20 @@ public static class ModelLocator
         ResourceDescriptor ret = new();
         if (Smithbox.ProjectType == ProjectType.DS1 || Smithbox.ProjectType == ProjectType.DES)
         {
-            if (hi)
+            string hkxbhd = $@"map\{mapid}\{(hi ? "h" : "l")}{mapid[1..]}.hkxbhd";
+            ret.AssetVirtualPath = $"map/{mapid}/hit/{(hi ? "hi" : "lo")}/{(hi ? "h" : "l")}{model[1..]}.hkx";
+            ret.AssetName = model;
+            if (Smithbox.FS.FileExists(hkxbhd))
             {
-                ret.AssetPath = LocatorUtils.GetAssetPath($@"map\{mapid}\{model}.hkx");
-                ret.AssetName = model;
-                ret.AssetVirtualPath = $@"map/{mapid}/hit/hi/{model}.hkx";
+                ret.AssetPath = hkxbhd;
+                ret.AssetVirtualPath += ".dcx";
+                ret.AssetArchiveVirtualPath = $"map/{mapid}/hit/{(hi ? "hi" : "lo")}";
             }
             else
             {
-                ret.AssetPath = LocatorUtils.GetAssetPath($@"map\{mapid}\l{model.Substring(1)}.hkx");
-                ret.AssetName = model;
-                ret.AssetVirtualPath = $@"map/{mapid}/hit/lo/l{model.Substring(1)}.hkx";
+                ret.AssetPath = LocatorUtils.GetAssetPath($@"map\{mapid}\{(hi ? "h" : "l")}{model[1..]}.hkx");
             }
+            
         }
         else if (Smithbox.ProjectType is ProjectType.DS1R)
         {
@@ -167,10 +169,21 @@ public static class ModelLocator
         ResourceDescriptor ret = new();
         if (Smithbox.ProjectType == ProjectType.DS1 || Smithbox.ProjectType == ProjectType.DS1R || Smithbox.ProjectType == ProjectType.DES)
         {
-            ret.AssetPath = LocatorUtils.GetAssetPath($@"map\{mapid}\{model}.nvm");
-            ret.AssetName = model;
-            ret.AssetArchiveVirtualPath = $@"map/{mapid}/nav";
-            ret.AssetVirtualPath = $@"map/{mapid}/nav/{model}.nvm";
+            string nvmbnd = $@"map\{mapid}\{mapid}.nvmbnd.dcx";
+            if (Smithbox.FS.FileExists(nvmbnd))
+            {
+                ret.AssetPath = nvmbnd;
+                ret.AssetName = model;
+                ret.AssetArchiveVirtualPath = $@"map/{mapid}/nav";
+                ret.AssetVirtualPath = $@"map/{mapid}/nav/{model}.nvm";
+            }
+            else
+            {
+                ret.AssetPath = LocatorUtils.GetAssetPath($@"map\{mapid}\{model}.nvm");
+                ret.AssetName = model;
+                ret.AssetArchiveVirtualPath = $@"map/{mapid}/nav";
+                ret.AssetVirtualPath = $@"map/{mapid}/nav/{model}.nvm";
+            }
         }
         else
             return GetNullAsset();

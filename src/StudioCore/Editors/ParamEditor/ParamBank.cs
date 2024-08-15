@@ -571,14 +571,17 @@ public class ParamBank
     private void LoadParamsDS1()
     {
         var fs = Smithbox.FS;
-        if (!fs.FileExists($@"param\GameParam\GameParam.parambnd"))
+        string param = @"param\GameParam\GameParam.parambnd";
+        if (!fs.FileExists(param))
         {
-            throw CreateParamMissingException(Smithbox.ProjectType);
+            param = param + ".dcx";
+            if (!fs.FileExists(param))
+            {
+                throw CreateParamMissingException(Smithbox.ProjectType);
+            }
         }
 
         // Load params
-        var param = $@"param\GameParam\GameParam.parambnd";
-
         LoadParamsDS1FromFile(param, fs);
 
         //DrawParam
@@ -591,7 +594,16 @@ public class ParamBank
     private void LoadVParamsDS1()
     {
         var fs = Smithbox.VanillaFS;
-        LoadParamsDS1FromFile($@"param\GameParam\GameParam.parambnd", fs);
+        var param = @"param\GameParam\GameParam.parambnd";
+        if (!fs.FileExists(param))
+        {
+            param = param + ".dcx";
+            if (!fs.FileExists(param))
+            {
+                throw new Exception("Couldn't find vanilla GameParam!");
+            }
+        }
+        LoadParamsDS1FromFile(param, fs);
 
         foreach (var f in fs.FsRoot.GetDirectory("param")?.GetDirectory("drawparam")?.EnumerateFileNames() ?? [])
         {
@@ -1433,9 +1445,13 @@ public class ParamBank
         string param = @"param\GameParam\GameParam.parambnd";
         if (!fs.FileExists(param))
         {
-            TaskLogs.AddLog("Cannot locate param files. Save failed.",
-                LogLevel.Error, TaskLogs.LogPriority.High);
-            return;
+            param += ".dcx";
+            if (!fs.FileExists(param))
+            {
+                TaskLogs.AddLog("Cannot locate param files. Save failed.",
+                    LogLevel.Error, TaskLogs.LogPriority.High);
+                return;
+            }
         }
 
         using var paramBnd = BND3.Read(fs.GetFile(param).GetData());

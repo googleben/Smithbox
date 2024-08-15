@@ -170,7 +170,10 @@ public static class VirtualPathLocator
                     if (Smithbox.ProjectType == ProjectType.DS1 || Smithbox.ProjectType == ProjectType.DES)
                     {
                         bndpath = "";
-                        return LocatorUtils.GetAssetPath($@"map\{mapid}\{pathElements[i]}");
+                        if (i < pathElements.Length)
+                            return LocatorUtils.GetAssetPath($@"map\{mapid}\{pathElements[i]}");
+                        bool hi = hittype == "hi";
+                        return LocatorUtils.GetAssetPath($@"map\{mapid}\{(hi ? "h" : "l")}{mapid[1..]}.hkxbhd");
                     }
                     else if (Smithbox.ProjectType == ProjectType.DS1R)
                     {

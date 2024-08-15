@@ -86,6 +86,8 @@ public static class TextLocator
         else if (Smithbox.ProjectType == ProjectType.DS1)
         {
             path = $@"msg\{langFolder}\{msgBndType}.msgbnd";
+            if (!Smithbox.FS.FileExists(path))
+                path = path + ".dcx";
         }
         else if (Smithbox.ProjectType == ProjectType.DS1R)
         {

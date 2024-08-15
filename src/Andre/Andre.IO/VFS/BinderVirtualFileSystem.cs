@@ -1,4 +1,5 @@
-﻿using Andre.Core.Util;
+﻿using Andre.Core;
+using Andre.Core.Util;
 using Andre.Formats;
 using SoulsFormats;
 using System.Diagnostics;
@@ -70,34 +71,54 @@ namespace Andre.IO.VFS
                 }
             }
         }
-
-        public static BinderVirtualFileSystem FromEldenRing(string folder)
+        public static BinderVirtualFileSystem FromDS1(string folder)
         {
-            var binders = Directory.GetFiles(folder, "*_decrypted.bhd", SearchOption.AllDirectories)
-                .Where(x => !x.Contains("bhd5"))
-                .Select(bhd => new BinderArchive(bhd, bhd.Replace("_decrypted.bhd", ".bdt"), BHD5.Game.EldenRing))
+            var binders = Directory.GetFiles(folder, "*.bdt", SearchOption.AllDirectories)
+                .Select(bdt => new BinderArchive(bdt.Replace(".bdt", ".bhd"), bdt, Game.DS1))
                 .ToArray();
-            var dictionary = new BhdDictionary(File.ReadAllText(@"Resources\EldenRingDictionary.txt"), BHD5.Game.EldenRing);
+            var dictionary = new BhdDictionary(File.ReadAllText(@"Resources\DarkSouls1Dictionary.txt"), BHD5.Game.DarkSouls1);
             return new(binders, dictionary);
         }
 
         public static BinderVirtualFileSystem FromDS2(string folder)
         {
-            var binders = Directory.GetFiles(folder, "*_decrypted.bhd", SearchOption.AllDirectories)
-                .Select(bhd => new BinderArchive(bhd, bhd.Replace("_decrypted.bhd", ".bdt"), BHD5.Game.DarkSouls2))
+            var binders = Directory.GetFiles(folder, "*.bdt", SearchOption.AllDirectories)
+                .Select(bdt => new BinderArchive(bdt.Replace(".bdt", ".bhd"), bdt, Game.DS2S))
                 .ToArray();
             var dictionary = new BhdDictionary(File.ReadAllText(@"Resources\DarkSouls2Dictionary.txt"), BHD5.Game.DarkSouls2);
             return new(binders, dictionary);
         }
-
-        public static BinderVirtualFileSystem FromGameFolder(string folder, BHD5.Game game)
+        
+        public static BinderVirtualFileSystem FromEldenRing(string folder)
         {
-            return game switch
+            var binders = Directory.GetFiles(folder, "*.bdt", SearchOption.AllDirectories)
+                .Where(x => !x.Contains("bhd5"))
+                .Select(bdt => new BinderArchive(bdt.Replace(".bdt", ".bhd"), bdt, Game.ER))
+                .ToArray();
+            var dictionary = new BhdDictionary(File.ReadAllText(@"Resources\EldenRingDictionary.txt"), BHD5.Game.EldenRing);
+            return new(binders, dictionary);
+        }
+
+        public static BinderVirtualFileSystem FromGameFolder(string folder, Game game)
+        {
+            BhdDictionary dictionary = game switch
             {
-                BHD5.Game.EldenRing => FromEldenRing(folder),
-                BHD5.Game.DarkSouls2 => FromDS2(folder),
-                _ => throw new NotImplementedException()
+                Game.DES => throw new NotImplementedException(),
+                Game.DS1 => new(File.ReadAllText(@"Resources\DarkSoulsDictionary.txt"), BHD5.Game.DarkSouls1),
+                Game.DS1R => new(File.ReadAllText(@"Resources\DarkSoulsDictionary.txt"), BHD5.Game.DarkSouls1),
+                Game.DS2S => new(File.ReadAllText(@"Resources\DarkSouls2Dictionary.txt"), BHD5.Game.DarkSouls2),
+                Game.DS3 => new(File.ReadAllText(@"Resources\DarkSouls3Dictionary.txt"), BHD5.Game.DarkSouls3),
+                Game.BB => throw new NotImplementedException(),
+                Game.SDT => new(File.ReadAllText(@"Resources\SekiroDictionary.txt"), BHD5.Game.DarkSouls3),
+                Game.ER => new(File.ReadAllText(@"Resources\EldenRingDictionary.txt"), BHD5.Game.EldenRing),
+                Game.AC6 => new(File.ReadAllText(@"Resources\ArmoredCore6Dictionary.txt"), BHD5.Game.EldenRing),
+                Game.DS2 => throw new NotImplementedException(),
+                _ => throw new ArgumentOutOfRangeException(nameof(game), game, null)
             };
+            var binders = BinderArchive.FindBHDs(folder, game)
+                .Select(s => new BinderArchive(s, s.Replace(".bhd5", ".bdt").Replace(".bhd", ".bdt"), game))
+                .ToArray();
+            return new(binders, dictionary);
         }
         
         public override bool TryGetFile(VirtualFileSystem.VFSPath path, [MaybeNullWhen(false)] out VirtualFile file)

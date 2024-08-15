@@ -1,4 +1,6 @@
-﻿using SoulsFormats;
+﻿using Andre.Core;
+using SoulsFormats;
+using System;
 
 namespace StudioCore.Core;
 
@@ -21,8 +23,7 @@ public enum ProjectType
 public static class ProjectTypeMethods
 {
     public static BHD5.Game? AsBhdGame(this ProjectType p)
-    {
-        return p switch
+        => p switch
         {
             ProjectType.DS1 => BHD5.Game.DarkSouls1,
             ProjectType.DS1R => BHD5.Game.DarkSouls1,
@@ -33,5 +34,20 @@ public static class ProjectTypeMethods
             ProjectType.ER => BHD5.Game.EldenRing,
             _ => null
         };
-    }
+
+    public static Game? AsAndreGame(this ProjectType p)
+        => p switch
+        {
+            ProjectType.DES => Game.DES,
+            ProjectType.DS1 => Game.DS1,
+            ProjectType.DS1R => Game.DS1R,
+            ProjectType.DS2S => Game.DS2S,
+            ProjectType.DS3 => Game.DS3,
+            ProjectType.BB => Game.BB,
+            ProjectType.SDT => Game.SDT,
+            ProjectType.ER => Game.ER,
+            ProjectType.AC6 => Game.AC6,
+            ProjectType.DS2 => Game.DS2,
+            _ => null
+        };
 }

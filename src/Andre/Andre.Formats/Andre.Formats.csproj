@@ -5,6 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <LangVersion>12</LangVersion>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
   </PropertyGroup>
 
   <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
@@ -21,12 +22,30 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Resources\EldenRingDictionary.txt">
+    <None Remove="Resources\EldenRingDictionary.txt" />
+    <AdditionalFiles Include="Resources\EldenRingDictionary.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-    <None Update="Resources\DarkSouls2Dictionary.txt">
+    </AdditionalFiles>
+    <None Remove="Resources\DarkSouls2Dictionary.txt" />
+    <AdditionalFiles Include="Resources\DarkSouls2Dictionary.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
+    </AdditionalFiles>
+    <None Remove="bhd5_decrypt_rust.dll" />
+    <AdditionalFiles Include="bhd5_decrypt_rust.dll">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AdditionalFiles>
+    <None Remove="Resources\DarkSouls3Dictionary.txt" />
+    <AdditionalFiles Include="Resources\DarkSouls3Dictionary.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AdditionalFiles>
+    <None Remove="Resources\DarkSoulsDictionary.txt" />
+    <AdditionalFiles Include="Resources\DarkSoulsDictionary.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AdditionalFiles>
+    <None Remove="Resources\SekiroDictionary.txt" />
+    <AdditionalFiles Include="Resources\SekiroDictionary.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </AdditionalFiles>
   </ItemGroup>
 
 </Project>

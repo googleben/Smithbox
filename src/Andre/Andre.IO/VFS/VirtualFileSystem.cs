@@ -107,7 +107,7 @@ public abstract class VirtualFileSystem
     public abstract IEnumerable<VirtualFile> EnumerateFiles();
 
     /// <summary>
-    /// Equivalent to Directory.GetFileSystemEntries (but only returns files, not directories)
+    /// Equivalent to Directory.GetFileSystemEntries with regex (but only returns files, not directories)
     /// </summary>
     /// <param name="directoryPath"></param>
     /// <param name="regex"></param>
@@ -116,7 +116,7 @@ public abstract class VirtualFileSystem
         => GetDirectory(directoryPath)?.GetFileNamesMatching(regex).Select(p => Path.Combine(directoryPath, p)) ?? Array.Empty<string>();
 
     /// <summary>
-    /// Equivalent to Directory.GetFileSystemEntries
+    /// Equivalent to Directory.GetFileSystemEntries with regex
     /// </summary>
     /// <param name="directoryPath"></param>
     /// <param name="regex"></param>
@@ -127,7 +127,8 @@ public abstract class VirtualFileSystem
     public IEnumerable<string> GetFileNamesMatchingRecursive(string directoryPath,
         [StringSyntax(StringSyntaxAttribute.Regex)] string regex)
     {
-        var dir = GetDirectory(directoryPath);
+        if (!TryGetDirectory(directoryPath, out var dir))
+            return Array.Empty<string>();
         var ans = dir.GetFileNamesMatching(regex).Select(p => Path.Combine(directoryPath, p)).ToList();
         
         List<(string, VirtualDirectory)> pathStack = [(directoryPath, dir)];
@@ -147,7 +148,8 @@ public abstract class VirtualFileSystem
     public IEnumerable<string> GetFileSystemEntriesMatchingRecursive(string directoryPath,
         [StringSyntax(StringSyntaxAttribute.Regex)] string regex)
     {
-        var dir = GetDirectory(directoryPath);
+        if (!TryGetDirectory(directoryPath, out var dir))
+            return Array.Empty<string>();
         var ans = dir.GetFileSystemEntriesMatching(regex).Select(p => Path.Combine(directoryPath, p)).ToList();
         
         List<(string, VirtualDirectory)> pathStack = [(directoryPath, dir)];

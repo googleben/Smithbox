@@ -22,14 +22,14 @@ namespace Andre.IO.VFS
 
         public override bool FileExists(VirtualFileSystem.VFSPath path)
         {
-            return File.Exists(Path.Combine(rootPath, path.ToString().TrimStart('/')));
+            return File.Exists(Path.Combine(rootPath, path.ToString().TrimStart('/').TrimStart('\\')));
         }
 
         public override bool TryGetFile(VirtualFileSystem.VFSPath path, [MaybeNullWhen(false)] out VirtualFile file)
         {
             if (FileExists(path))
             {
-                file = new RealVirtualFile(Path.Combine(rootPath, path.ToString().TrimStart('/')), isReadOnly);
+                file = new RealVirtualFile(Path.Combine(rootPath, path.ToString().TrimStart('/').TrimStart('\\')), isReadOnly);
                 return true;
             }
 
@@ -39,7 +39,7 @@ namespace Andre.IO.VFS
 
         public override bool DirectoryExists(VirtualFileSystem.VFSPath path)
         {
-            return Directory.Exists(Path.Combine(rootPath, path.ToString().TrimStart('/')));
+            return Directory.Exists(Path.Combine(rootPath, path.ToString().TrimStart('/').TrimStart('\\')));
         }
 
         public override IEnumerable<VirtualFile> EnumerateFiles()
@@ -50,23 +50,23 @@ namespace Andre.IO.VFS
         public override void Delete(string path)
         {
             if (isReadOnly) throw ThrowWriteNotSupported();
-            path = path.TrimStart('/');
+            path = path.TrimStart('/').TrimStart('\\');
             File.Delete(Path.Combine(rootPath, path));
         }
 
         public override void Copy(string from, string to)
         {
             if (isReadOnly) throw ThrowWriteNotSupported();
-            from = from.TrimStart('/');
-            to = to.TrimStart('/');
+            from = from.TrimStart('/').TrimStart('\\');
+            to = to.TrimStart('/').TrimStart('\\');
             File.Copy(Path.Combine(rootPath, from), Path.Combine(rootPath, to), true);
         }
 
         public override void Move(string from, string to)
         {
             if (isReadOnly) throw ThrowWriteNotSupported();
-            from = from.TrimStart('/');
-            to = to.TrimStart('/');
+            from = from.TrimStart('/').TrimStart('\\');
+            to = to.TrimStart('/').TrimStart('\\');
             File.Move(Path.Combine(rootPath, from), Path.Combine(rootPath, to), true);
         }
 
@@ -79,7 +79,7 @@ namespace Andre.IO.VFS
 
             public override bool FileExists(string fileName)
             {
-                return File.Exists(Path.Combine(path, fileName.TrimStart('/')));
+                return File.Exists(Path.Combine(path, fileName.TrimStart('/').TrimStart('\\')));
             }
 
             public override bool TryGetFile(string fileName, out VirtualFile file)
@@ -90,13 +90,13 @@ namespace Andre.IO.VFS
                     return false;
                 }
 
-                file = new RealVirtualFile(Path.Combine(path, fileName.TrimStart('/')), isReadOnly);
+                file = new RealVirtualFile(Path.Combine(path, fileName.TrimStart('/').TrimStart('\\')), isReadOnly);
                 return true;
             }
 
             public override bool DirectoryExists(string directoryName)
             {
-                return Directory.Exists(Path.Combine(path, directoryName.TrimStart('/')));
+                return Directory.Exists(Path.Combine(path, directoryName.TrimStart('/').TrimStart('\\')));
             }
 
             public override bool TryGetDirectory(string directoryName, [MaybeNullWhen(false)] out VirtualDirectory directory)
@@ -107,13 +107,13 @@ namespace Andre.IO.VFS
                     return false;
                 }
 
-                directory = new RealVirtualDirectory(Path.Combine(path, directoryName.TrimStart('/')), isReadOnly);
+                directory = new RealVirtualDirectory(Path.Combine(path, directoryName.TrimStart('/').TrimStart('\\')), isReadOnly);
                 return true;
             }
 
             public override VirtualDirectory GetOrCreateDirectory(string directoryName)
             {
-                directoryName = directoryName.TrimStart('/');
+                directoryName = directoryName.TrimStart('/').TrimStart('\\');
                 string newPath = Path.Combine(path, directoryName);
                 if (!Directory.Exists(newPath))
                 {
@@ -125,14 +125,14 @@ namespace Andre.IO.VFS
 
             public override VirtualFile GetOrCreateFile(string fileName)
             {
-                fileName = fileName.TrimStart('/');
+                fileName = fileName.TrimStart('/').TrimStart('\\');
                 string filePath = Path.Combine(path, fileName);
                 if (TryGetFile(filePath, out var file))
                 {
                     return file;
                 }
                 if (isReadOnly) throw ThrowWriteNotSupported();
-                File.Create(filePath);
+                File.Create(filePath).Dispose();
                 if (!TryGetFile(filePath, out file))
                 {
                     throw new($"Failed to create file \"{filePath}\"... somehow?");
@@ -147,12 +147,12 @@ namespace Andre.IO.VFS
 
             public override IEnumerable<string> EnumerateDirectoryNames()
             {
-                return Directory.EnumerateDirectories(path);
+                return Directory.EnumerateDirectories(path).Select(d => Path.GetFileNameWithoutExtension(d+".dummy"));
             }
 
             public override IEnumerable<string> EnumerateFileNames()
             {
-                return Directory.EnumerateFiles(path);
+                return Directory.EnumerateFiles(path).Select(Path.GetFileName);
             }
 
             public override IEnumerable<(string, VirtualFile)> EnumerateFiles()

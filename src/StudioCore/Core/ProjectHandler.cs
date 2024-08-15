@@ -184,14 +184,27 @@ public class ProjectHandler
     private void UpdateFilesystems()
     {
         List<VirtualFileSystem> fileSystems = [];
+        
+        //it's important that we do the project FS first, because it needs to be the first element of the
+        //filesystem list, so that its files take precedence over vanilla files.
+        if ((Smithbox.ProjectRoot ?? "") != "")
+        {
+            Smithbox.ProjectFS = new RealVirtualFileSystem(Smithbox.ProjectRoot!, false);
+            fileSystems.Add(Smithbox.ProjectFS);
+        }
+        else
+        {
+            Smithbox.ProjectFS = EmptyVirtualFileSystem.Instance;
+        }
+        
         if ((Smithbox.GameRoot ?? "") != "")
         {
             Smithbox.VanillaRealFS = new RealVirtualFileSystem(CurrentProject.Config.GameRoot, false);
             fileSystems.Add(Smithbox.VanillaRealFS);
-            var bhdGame = CurrentProject.Config.GameType.AsBhdGame();
-            if (bhdGame != null && Directory.GetFileSystemEntries(Smithbox.GameRoot, "*_decrypted.bhd").Length != 0)
+            var andreGame = CurrentProject.Config.GameType.AsAndreGame();
+            if (andreGame != null)
             {
-                Smithbox.VanillaBinderFS = BinderVirtualFileSystem.FromGameFolder(Smithbox.GameRoot, bhdGame.Value);
+                Smithbox.VanillaBinderFS = BinderVirtualFileSystem.FromGameFolder(Smithbox.GameRoot, andreGame.Value);
                 fileSystems.Add(Smithbox.VanillaBinderFS);
                 Smithbox.VanillaFS = new CompundVirtualFileSystem([Smithbox.VanillaRealFS, Smithbox.VanillaBinderFS]);
             }
@@ -205,16 +218,6 @@ public class ProjectHandler
         {
             Smithbox.VanillaRealFS = EmptyVirtualFileSystem.Instance;
             Smithbox.VanillaFS = EmptyVirtualFileSystem.Instance;
-        }
-
-        if ((Smithbox.ProjectRoot ?? "") != "")
-        {
-            Smithbox.ProjectFS = new RealVirtualFileSystem(Smithbox.ProjectRoot!, false);
-            fileSystems.Add(Smithbox.ProjectFS);
-        }
-        else
-        {
-            Smithbox.ProjectFS = EmptyVirtualFileSystem.Instance;
         }
 
         if (fileSystems.Count == 0) Smithbox.FS = EmptyVirtualFileSystem.Instance;
@@ -329,7 +332,7 @@ public class ProjectHandler
         if (targetProject == null)
             return;
 
-        if (!LocatorUtils.CheckFilesExpanded(targetProject.Config.GameRoot, targetProject.Config.GameType))
+        /*if (!LocatorUtils.CheckFilesExpanded(targetProject.Config.GameRoot, targetProject.Config.GameType))
         {
             if (targetProject.Config.GameType is ProjectType.DS1 or ProjectType.DS2S or ProjectType.DS2)
             {
@@ -341,7 +344,7 @@ public class ProjectHandler
             TaskLogs.AddLog(
                 $"The files for {targetProject.Config.GameType} do not appear to be fully unpacked. Functionality will be limited. Please use UXM selective unpacker to unpack game files",
                 LogLevel.Warning);
-        }
+        }*/
     }
 
     public bool CheckDecompressionDLLs(Project targetProject)
