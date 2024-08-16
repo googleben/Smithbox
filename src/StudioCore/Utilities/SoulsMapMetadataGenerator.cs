@@ -102,7 +102,7 @@ public static class SoulsMapMetadataGenerator
             }
             else
             {
-                var files = Smithbox.FS.GetFileNamesMatching(dir, ".*\\.nvm");
+                var files = Smithbox.FS.GetFileNamesWithExtensions(dir, ".nvm");
                 foreach (var file in files)
                 {
                     var fname = Path.GetFileNameWithoutExtension(file);

@@ -51,7 +51,7 @@ public class GlobalModelSearch
             var mapDir = $"map/mapstudio/";
             var fs = _targetProjectFiles ? Smithbox.ProjectFS : Smithbox.VanillaFS;
 
-            foreach (var entry in fs.GetFileSystemEntriesMatching(mapDir, @".*\.msb\.dcx"))
+            foreach (var entry in fs.GetFileNamesWithExtensions(mapDir, ".msb.dcx"))
             {
                 var name = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(entry));
                 ResourceDescriptor ad = MapLocator.GetMapMSB(name);

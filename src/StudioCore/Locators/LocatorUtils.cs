@@ -84,7 +84,7 @@ public static class LocatorUtils
         {
             HashSet<string> fileList = new();
             List<string> ret = new();
-            foreach (var f in Smithbox.VanillaFS.GetFileNamesMatching(paramDir, $".*\\{paramExt}"))
+            foreach (var f in Smithbox.VanillaFS.GetFileNamesWithExtensions(paramDir, paramExt))
             {
                 var name = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(f));
                 ret.Add(name);
@@ -94,7 +94,7 @@ public static class LocatorUtils
             if (ignoreProject)
                 return ret;
             
-            foreach (var f in Smithbox.ProjectFS.GetFileNamesMatching(paramDir, $".*\\{paramExt}"))
+            foreach (var f in Smithbox.ProjectFS.GetFileNamesWithExtensions(paramDir, paramExt))
             {
                 var name = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(f));
                 ret.Add(name);

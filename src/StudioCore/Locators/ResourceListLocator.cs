@@ -54,7 +54,7 @@ public static class ResourceListLocator
         List<ResourceDescriptor> ret = new();
         if (Smithbox.ProjectType == ProjectType.DS3 || Smithbox.ProjectType == ProjectType.SDT)
         {
-            foreach (var f in Smithbox.FS.GetFileNamesMatching($"map/{mapid}", @".*\.mapbnd\.dcx"))
+            foreach (var f in Smithbox.FS.GetFileNamesWithExtensions($"map/{mapid}", ".mapbnd.dcx"))
             {
                 ResourceDescriptor ad = new();
                 ad.AssetPath = f;
@@ -69,7 +69,7 @@ public static class ResourceListLocator
         {
             var mapPath = $@"\map\{mapid[..3]}\{mapid}";
 
-            foreach (var f in Smithbox.FS.GetFileNamesMatching(mapPath, @".*\.mapbnd\.dcx"))
+            foreach (var f in Smithbox.FS.GetFileNamesWithExtensions(mapPath, ".mapbnd.dcx"))
             {
                 ResourceDescriptor ad = new();
                 ad.AssetPath = f;
@@ -84,7 +84,7 @@ public static class ResourceListLocator
         {
             var mapPath = Smithbox.GameRoot + $@"\map\{mapid[..3]}\{mapid}";
 
-            foreach (var f in Smithbox.FS.GetFileNamesMatching(mapPath, @".*\.mapbnd\.dcx"))
+            foreach (var f in Smithbox.FS.GetFileNamesWithExtensions(mapPath, ".mapbnd.dcx"))
             {
                 ResourceDescriptor ad = new();
                 ad.AssetPath = f;
@@ -97,8 +97,8 @@ public static class ResourceListLocator
         }
         else
         {
-            var ext = Smithbox.ProjectType == ProjectType.DS1 ? @"\\.flver" : @"\\.flver\\.dcx";
-            foreach (var f in Smithbox.FS.GetFileNamesMatching($@"\map\{mapid}\", @$".*{ext}"))
+            var ext = Smithbox.ProjectType == ProjectType.DS1 ? @".flver" : @".flver.dcx";
+            foreach (var f in Smithbox.FS.GetFileNamesWithExtensions($@"\map\{mapid}\", ext))
             {
                 ResourceDescriptor ad = new();
                 ad.AssetPath = f;
@@ -145,7 +145,7 @@ public static class ResourceListLocator
                 return ret;
             }
 
-            foreach (var f in Smithbox.FS.GetFileNamesMatching(modelDir, $@".*\{modelExt}"))
+            foreach (var f in Smithbox.FS.GetFileNamesWithExtensions(modelDir, modelExt))
             {
                 var name = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(f));
                 ret.Add(name);
@@ -200,7 +200,7 @@ public static class ResourceListLocator
             return ret;
         }
 
-        foreach (var f in Smithbox.FS.GetFileNamesMatching(modelDir, $@".*\{modelExt}").ToList())
+        foreach (var f in Smithbox.FS.GetFileNamesWithExtensions(modelDir, modelExt).ToList())
         {
             var name = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(f));
             ret.Add(name);
@@ -211,7 +211,7 @@ public static class ResourceListLocator
         {
             foreach (var folder in fs.GetDirectory(modelDir).EnumerateDirectoryNames())
             {
-                foreach (var f in fs.GetFileNamesMatching($"{modelDir}/{folder[^6..]}", $@".*\{modelExt}"))
+                foreach (var f in fs.GetFileNamesWithExtensions($"{modelDir}/{folder[^6..]}", modelExt))
                 {
                     var name = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(f));
                     if (!objs.Contains(name))
@@ -257,7 +257,7 @@ public static class ResourceListLocator
                 return ret;
             }
 
-            foreach (var f in Smithbox.FS.GetFileNamesMatching(modelDir, $@".*\{modelExt}"))
+            foreach (var f in Smithbox.FS.GetFileNamesWithExtensions(modelDir, modelExt))
             {
                 var name = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(f));
                 ret.Add(name);

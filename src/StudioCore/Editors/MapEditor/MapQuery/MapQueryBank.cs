@@ -54,7 +54,7 @@ public class MapQueryBank
         var fs = Engine._targetProjectFiles ? Smithbox.ProjectFS : Smithbox.VanillaFS;
         string mapDir = "/map/mapstudio";
 
-        foreach (var entry in fs.GetFileNamesMatching(mapDir, @".*\.msb\.dcx"))
+        foreach (var entry in fs.GetFileNamesWithExtensions(mapDir, ".msb.dcx"))
         {
             var name = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(entry));
             ResourceDescriptor ad = MapLocator.GetMapMSB(name);

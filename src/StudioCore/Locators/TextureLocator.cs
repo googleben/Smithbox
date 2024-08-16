@@ -21,7 +21,7 @@ public static class TextureLocator
         else if (Smithbox.ProjectType == ProjectType.DES)
         {
             var mid = mapid.Substring(0, 3);
-            foreach (var path in Smithbox.FS.GetFileNamesMatching($"map/{mid}", @".*\.tpf\.dcx"))
+            foreach (var path in Smithbox.FS.GetFileNamesWithExtensions($"map/{mid}", ".tpf.dcx"))
             {
                 ResourceDescriptor ad = new();
                 ad.AssetPath = path;

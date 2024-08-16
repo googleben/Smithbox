@@ -94,7 +94,7 @@ public class FMGLanguage
             return false;
         }
 
-        List<string> files = Smithbox.FS.GetFileNamesMatching(desc.AssetPath, ".*\\.fmg").ToList();
+        List<string> files = Smithbox.FS.GetFileNamesWithExtensions(desc.AssetPath, ".fmg").ToList();
             //Directory
             //.GetFileSystemEntries($@"{Smithbox.GameRoot}\{desc.AssetPath}", @"*.fmg").ToList();
 

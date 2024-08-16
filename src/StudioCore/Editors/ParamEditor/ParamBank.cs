@@ -705,7 +705,7 @@ public class ParamBank
         List<string> looseParams = new();
         
         string paramDir = Path.Combine(dir, "Param");
-        looseParams.AddRange(fs.GetFileNamesMatching(paramDir, ".*\\.param"));
+        looseParams.AddRange(fs.GetFileNamesWithExtensions(paramDir, ".param"));
 
         return looseParams;
     }
@@ -1468,7 +1468,7 @@ public class ParamBank
         //DrawParam
         if (fs.DirectoryExists($@"param\DrawParam"))
         {
-            foreach (var bnd in fs.GetFileNamesMatching($@"param\DrawParam", ".*\\.parambnd"))
+            foreach (var bnd in fs.GetFileNamesWithExtensions(@"param\DrawParam", ".parambnd"))
             {
                 using var drawParamBnd = BND3.Read(fs.GetFile(bnd).GetData());
                 foreach (BinderFile p in drawParamBnd.Files)
@@ -1510,7 +1510,7 @@ public class ParamBank
         //DrawParam
         if (fs.DirectoryExists($@"param\DrawParam"))
         {
-            foreach (var bnd in fs.GetFileNamesMatching($@"param\DrawParam", ".*\\.parambnd\\.dcx"))
+            foreach (var bnd in fs.GetFileNamesWithExtensions($@"param\DrawParam", ".parambnd.dcx"))
             {
                 using var drawParamBnd = BND3.Read(fs.GetFile(bnd).GetData());
                 foreach (BinderFile p in drawParamBnd.Files)
@@ -1785,7 +1785,7 @@ public class ParamBank
         List<string> drawParambndPaths = new();
         if (fs.DirectoryExists(@"param\drawparam"))
         {
-            foreach (var bnd in fs.GetFileNamesMatching($@"param\drawparam", @".*\.parambnd(\.dcx)?"))
+            foreach (var bnd in fs.GetFileNamesWithExtensions($@"param\drawparam", ".parambnd", ".parambnd.dcx"))
             {
                 drawParambndPaths.Add(bnd);
             }

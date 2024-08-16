@@ -315,7 +315,7 @@ public static class TextureFolderBank
     {
         HashSet<string> fileNames = new();
         List<string> ret = new();
-        foreach (var f in Smithbox.FS.GetFileNamesMatching(fileDir, $".*\\{fileExt}"))
+        foreach (var f in Smithbox.FS.GetFileNamesWithExtensions(fileDir, fileExt))
         {
             var name = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(f));
             ret.Add(name);

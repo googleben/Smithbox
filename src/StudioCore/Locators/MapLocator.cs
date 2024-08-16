@@ -125,7 +125,7 @@ public static class MapLocator
 
             List<string> files = new();
             
-            files.AddRange(Smithbox.FS.GetFileNamesMatching(path, @".*\.btl(\.dcx)?"));
+            files.AddRange(Smithbox.FS.GetFileNamesWithExtensions(path, ".btl", ".btl.dcx"));
 
             foreach (var file in files)
             {
@@ -213,10 +213,10 @@ public static class MapLocator
         }
         else
         {
-            Smithbox.FS.GetFileNamesMatching("map/MapStudio", ".*\\.msb")
+            Smithbox.FS.GetFileNamesWithExtensions("map/MapStudio", ".msb")
                 .Select(Path.GetFileNameWithoutExtension)
                 .ToList().ForEach(f => mapSet.Add(f));
-            Smithbox.FS.GetFileNamesMatching("map/MapStudio", ".*\\.msb\\.dcx")
+            Smithbox.FS.GetFileNamesWithExtensions("map/MapStudio", ".msb.dcx")
                 .Select(Path.GetFileNameWithoutExtension).Select(Path.GetFileNameWithoutExtension)
                 .ToList().ForEach(f => mapSet.Add(f));
         }
@@ -273,7 +273,7 @@ public static class MapLocator
         List<ResourceDescriptor> resourceDescriptors = new();
 
         // Get the names
-        var names = Smithbox.FS.GetFileNamesMatching($"map/{mapid}", ".*\\.btab\\.dcx")
+        var names = Smithbox.FS.GetFileNamesWithExtensions($"map/{mapid}", ".btab.dcx")
             .Select(Path.GetFileNameWithoutExtension).Select(Path.GetFileNameWithoutExtension)
             .ToList();
 
@@ -308,7 +308,7 @@ public static class MapLocator
         // Get the names
         //TODO: check whether the .Replace call is redundant
         var names = Smithbox.FS
-            .GetFileNamesMatching($"/map/{mapid[..3]}\\{mapid}", ".*\\.hkxbhd.*")
+            .GetFileNamesWithExtensions($"/map/{mapid[..3]}\\{mapid}", ".hkxbhd")
             .Select(Path.GetFileNameWithoutExtension).Select(Path.GetFileNameWithoutExtension)
             .Select(s => s.Replace(".hkxbhd", ""))
             .ToList();

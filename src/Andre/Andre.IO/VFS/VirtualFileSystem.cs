@@ -149,6 +149,7 @@ public abstract class VirtualFileSystem
 
         return ans;
     }
+    
     public IEnumerable<string> GetFileSystemEntriesMatchingRecursive(string directoryPath,
         [StringSyntax(StringSyntaxAttribute.Regex)] string regex)
     {
@@ -170,6 +171,20 @@ public abstract class VirtualFileSystem
 
         return ans;
     }
+
+    /// <summary>
+    /// Finds all files in a directory that have one of the given extensions.
+    /// Returns strings are full paths, not just file names.
+    /// </summary>
+    /// <param name="directoryPath"></param>
+    /// <param name="extensions"></param>
+    /// <returns></returns>
+    public IEnumerable<string> GetFileNamesWithExtensions(string directoryPath, params string[] extensions)
+        => extensions
+            .Select(e => $".*{e.Replace(".", "\\.")}$")
+            .Select(regex => GetFileNamesMatching(directoryPath, regex))
+            .Aggregate((a, b) => a.Concat(b))
+            .Distinct();
 
     #region WriteOperations
 

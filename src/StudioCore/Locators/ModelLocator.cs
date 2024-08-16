@@ -77,7 +77,8 @@ public static class ModelLocator
     public static ResourceDescriptor GetMapCollisionModel(string mapid, string model, bool hi = true)
     {
         ResourceDescriptor ret = new();
-        if (Smithbox.ProjectType == ProjectType.DS1 || Smithbox.ProjectType == ProjectType.DES)
+        if (Smithbox.ProjectType == ProjectType.DS1 || Smithbox.ProjectType == ProjectType.DES
+            || (Smithbox.ProjectType == ProjectType.DS1R && CFG.Current.PTDE_Collision_Root == ""))
         {
             string hkxbhd = $@"map\{mapid}\{(hi ? "h" : "l")}{mapid[1..]}.hkxbhd";
             ret.AssetVirtualPath = $"map/{mapid}/hit/{(hi ? "hi" : "lo")}/{(hi ? "h" : "l")}{model[1..]}.hkx";
