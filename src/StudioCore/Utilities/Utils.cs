@@ -330,15 +330,15 @@ public static class Utils
 
             if (gameType == ProjectType.DS3 && item is BND4 bndDS3)
             {
-                toFs.WriteFile(assetPath+"temp", SFUtil.EncryptDS3Regulation(bndDS3));
+                toFs.WriteFile(assetPath+".temp", SFUtil.EncryptDS3Regulation(bndDS3));
             }
             else if (gameType == ProjectType.ER && item is BND4 bndER)
             {
-                toFs.WriteFile(assetPath+"temp", SFUtil.EncryptERRegulation(bndER));
+                toFs.WriteFile(assetPath+".temp", SFUtil.EncryptERRegulation(bndER));
             }
             else if (gameType == ProjectType.AC6 && item is BND4 bndAC6)
             {
-                toFs.WriteFile(assetPath+"temp", SFUtil.EncryptAC6Regulation(bndAC6));
+                toFs.WriteFile(assetPath+".temp", SFUtil.EncryptAC6Regulation(bndAC6));
             }
             else if (item is BXF3 or BXF4)
             {
