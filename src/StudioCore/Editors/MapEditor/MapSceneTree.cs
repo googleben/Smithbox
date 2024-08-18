@@ -86,8 +86,12 @@ public class MapSceneTree : IActionEventHandler
 
     private WorldMapScreen _worldMapScreen;
 
-    public MapSceneTree(Configuration configuration, SceneTreeEventHandler handler, string id, Universe universe, ViewportSelection sel, ViewportActionManager aman, IViewport vp)
+    private MapEditorScreen Screen;
+
+    public MapSceneTree(MapEditorScreen screen, Configuration configuration, SceneTreeEventHandler handler, string id, Universe universe, ViewportSelection sel, ViewportActionManager aman, IViewport vp)
     {
+        Screen = screen;
+
         _handler = handler;
         _id = id;
         _universe = universe;
@@ -405,6 +409,21 @@ public class MapSceneTree : IActionEventHandler
                     }
                 }
 
+                if (Screen.MapQueryHandler.IsOpen)
+                {
+                    if (ImGui.Selectable("Add to Map Filter"))
+                    {
+                        Screen.MapQueryHandler.AddMapFilterInput(CurrentMapID);
+                    }
+                }
+                if (Screen.MapQueryEditHandler.IsOpen)
+                {
+                    if (ImGui.Selectable("Add to Map Filter"))
+                    {
+                        Screen.MapQueryEditHandler.AddMapFilterInput(CurrentMapID);
+                    }
+                }
+
                 ImGui.EndPopup();
             }
 
@@ -521,6 +540,9 @@ public class MapSceneTree : IActionEventHandler
 
         var nodeopen = false;
         var padding = hierarchial ? "   " : "    ";
+
+        var arrowKeySelect = false;
+
         if (hierarchial && e.Children.Count > 0)
         {
             ImGuiTreeNodeFlags treeflags = ImGuiTreeNodeFlags.OpenOnArrow | ImGuiTreeNodeFlags.SpanAvailWidth;
@@ -536,6 +558,11 @@ public class MapSceneTree : IActionEventHandler
                 {
                     _viewport.FrameBox(e.RenderSceneMesh.GetBounds());
                 }
+            }
+            if (ImGui.IsItemFocused() && (InputTracker.GetKey(Key.Up) || InputTracker.GetKey(Key.Down)))
+            {
+                doSelect = true;
+                arrowKeySelect = true;
             }
         }
         else
@@ -556,8 +583,16 @@ public class MapSceneTree : IActionEventHandler
                     }
                 }
             }
-            var alias = AliasUtils.GetEntityAliasName(e);
-            AliasUtils.DisplayAlias(alias);
+            if (ImGui.IsItemFocused() && (InputTracker.GetKey(Key.Up) || InputTracker.GetKey(Key.Down)))
+            {
+                doSelect = true;
+                arrowKeySelect = true;
+            }
+            if (ImGui.IsItemVisible())
+            {
+                var alias = AliasUtils.GetEntityAliasName(e);
+                AliasUtils.DisplayAlias(alias);
+            }
         }
 
         if (ImGui.IsItemClicked(0))
@@ -575,14 +610,7 @@ public class MapSceneTree : IActionEventHandler
             _pendingClick = null;
         }
 
-        // Up/Down arrow mass selection
-        var arrowKeySelect = false;
-        if (ImGui.IsItemFocused()
-            && (InputTracker.GetKey(Key.Up) || InputTracker.GetKey(Key.Down)))
-        {
-            doSelect = true;
-            arrowKeySelect = true;
-        }
+        
 
         if (hierarchial && doSelect)
         {

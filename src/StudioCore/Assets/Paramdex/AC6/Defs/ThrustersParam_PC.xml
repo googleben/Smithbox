@@ -151,8 +151,8 @@
     <Field Def="s8 Unk0x134"></Field>
     <Field Def="s8 Unk0x135"></Field>
     <Field Def="u16 Unk0x136"></Field>
-    <Field Def="f32 Unk0x138"></Field>
-    <Field Def="s32 thrusterSize_26"></Field>
+    <Field Def="f32 thrusterSize_26"></Field>
+    <Field Def="s32 thrusterSfxParamId_27"></Field>
     <Field Def="s8 Unk0x140"></Field>
     <Field Def="s8 Unk0x141"></Field>
     <Field Def="u8 UnkByte0x142"></Field>

@@ -57,6 +57,12 @@ public class TimeActEditorScreen : EditorScreen
     public ActionSubMenu ActionSubMenu;
     public ActionHandler ActionHandler;
 
+    private bool SelectChrContainer = false;
+    private bool SelectObjContainer = false;
+    private bool SelectTimeAct = false;
+    private bool SelectAnimation = false;
+    private bool SelectEvent = false;
+
     public TimeActEditorScreen(Sdl2Window window, GraphicsDevice device)
     {
         // TODO: re-enable once animation stuff is worked on
@@ -96,6 +102,12 @@ public class TimeActEditorScreen : EditorScreen
     public void Init()
     {
         ShowSaveOption = true;
+
+        // TAE implementation needs to be updated for AC6 (need to decompile AC6 DSAS to work out differences)
+        if(Smithbox.ProjectType is ProjectType.AC6)
+        {
+            ShowSaveOption = false;
+        }
     }
 
     public void Update(float dt)
@@ -397,11 +409,27 @@ public class TimeActEditorScreen : EditorScreen
                         isSelected = true;
                     }
 
+                    // File row
                     if (ImGui.Selectable($@" {info.Name}", isSelected, ImGuiSelectableFlags.AllowDoubleClick))
                     {
                         SelectionHandler.FileContainerChange(info, binder, i, FileContainerType.Character);
                     }
-                    TimeActUtils.DisplayTimeActFileAlias(info.Name, AliasType.Character);
+
+                    // Arrow Selection
+                    if (ImGui.IsItemHovered() && SelectChrContainer)
+                    {
+                        SelectChrContainer = false;
+                        SelectionHandler.FileContainerChange(info, binder, i, FileContainerType.Character);
+                    }
+                    if (ImGui.IsItemFocused() && (InputTracker.GetKey(Veldrid.Key.Up) || InputTracker.GetKey(Veldrid.Key.Down)))
+                    {
+                        SelectChrContainer = true;
+                    }
+
+                    if (ImGui.IsItemVisible())
+                    {
+                        TimeActUtils.DisplayTimeActFileAlias(info.Name, AliasType.Character);
+                    }
 
                     SelectionHandler.ContextMenu.ContainerMenu(isSelected, info.Name);
 
@@ -432,11 +460,27 @@ public class TimeActEditorScreen : EditorScreen
                         isSelected = true;
                     }
 
+                    // File row
                     if (ImGui.Selectable($@" {info.Name}", isSelected, ImGuiSelectableFlags.AllowDoubleClick))
                     {
                         SelectionHandler.FileContainerChange(info, binder, i, FileContainerType.Object);
                     }
-                    TimeActUtils.DisplayTimeActFileAlias(info.Name, AliasType.Asset);
+
+                    // Arrow Selection
+                    if (ImGui.IsItemHovered() && SelectObjContainer)
+                    {
+                        SelectObjContainer = false;
+                        SelectionHandler.FileContainerChange(info, binder, i, FileContainerType.Object);
+                    }
+                    if (ImGui.IsItemFocused() && (InputTracker.GetKey(Veldrid.Key.Up) || InputTracker.GetKey(Veldrid.Key.Down)))
+                    {
+                        SelectObjContainer = true;
+                    }
+
+                    if (ImGui.IsItemVisible())
+                    {
+                        TimeActUtils.DisplayTimeActFileAlias(info.Name, AliasType.Asset);
+                    }
 
                     SelectionHandler.ContextMenu.ContainerMenu(isSelected, info.Name);
 
@@ -490,13 +534,28 @@ public class TimeActEditorScreen : EditorScreen
                     isSelected = true;
                 }
 
+                // Time Act row
                 if (ImGui.Selectable($@"{info.Name}##TimeAct{i}", isSelected, ImGuiSelectableFlags.AllowDoubleClick))
                 {
                     SelectionHandler.TimeActChange(entry, i);
                 }
 
-                if (CFG.Current.TimeActEditor_DisplayTimeActRow_AliasInfo)
-                    TimeActUtils.DisplayTimeActAlias(SelectionHandler.ContainerInfo, entry.ID);
+                // Arrow Selection
+                if (ImGui.IsItemHovered() && SelectTimeAct)
+                {
+                    SelectTimeAct = false;
+                    SelectionHandler.TimeActChange(entry, i);
+                }
+                if (ImGui.IsItemFocused() && (InputTracker.GetKey(Veldrid.Key.Up) || InputTracker.GetKey(Veldrid.Key.Down)))
+                {
+                    SelectTimeAct = true;
+                }
+
+                if (ImGui.IsItemVisible())
+                {
+                    if (CFG.Current.TimeActEditor_DisplayTimeActRow_AliasInfo)
+                        TimeActUtils.DisplayTimeActAlias(SelectionHandler.ContainerInfo, entry.ID);
+                }
 
                 SelectionHandler.ContextMenu.TimeActMenu(isSelected, entry.ID.ToString());
 
@@ -549,14 +608,30 @@ public class TimeActEditorScreen : EditorScreen
                     displayName = $"{entry.ID} {entry.AnimFileName}";
                 }
 
+                // Animation row
                 if (ImGui.Selectable($@" {displayName}##taeAnim{i}", isSelected, ImGuiSelectableFlags.AllowDoubleClick))
                 {
                     EventGraph.ResetGraph();
                     SelectionHandler.TimeActAnimationChange(entry, i);
                 }
 
-                if (CFG.Current.TimeActEditor_DisplayAnimRow_GeneratorInfo)
-                    TimeActUtils.DisplayAnimationAlias(SelectionHandler, entry.ID);
+                // Arrow Selection
+                if (ImGui.IsItemHovered() && SelectAnimation)
+                {
+                    SelectAnimation = false;
+                    EventGraph.ResetGraph();
+                    SelectionHandler.TimeActAnimationChange(entry, i);
+                }
+                if (ImGui.IsItemFocused() && (InputTracker.GetKey(Veldrid.Key.Up) || InputTracker.GetKey(Veldrid.Key.Down)))
+                {
+                    SelectAnimation = true;
+                }
+
+                if (ImGui.IsItemVisible())
+                {
+                    if (CFG.Current.TimeActEditor_DisplayAnimRow_GeneratorInfo)
+                        TimeActUtils.DisplayAnimationAlias(SelectionHandler, entry.ID);
+                }
 
                 SelectionHandler.ContextMenu.TimeActAnimationMenu(isSelected, entry.ID.ToString());
 
@@ -771,22 +846,37 @@ public class TimeActEditorScreen : EditorScreen
                 }
                 displayName = $" {displayName}";
 
+                // Event row
                 if (ImGui.Selectable($@"{displayName}##taeEvent{i}", isSelected, ImGuiSelectableFlags.AllowDoubleClick))
                 {
                     SelectionHandler.TimeActEventChange(evt, i);
                 }
 
-                if(CFG.Current.TimeActEditor_DisplayEventRow_EnumInfo)
-                    Decorator.DisplayEnumInfo(evt);
+                // Arrow Selection
+                if (ImGui.IsItemHovered() && SelectEvent)
+                {
+                    SelectEvent = false;
+                    SelectionHandler.TimeActEventChange(evt, i);
+                }
+                if (ImGui.IsItemFocused() && (InputTracker.GetKey(Veldrid.Key.Up) || InputTracker.GetKey(Veldrid.Key.Down)))
+                {
+                    SelectEvent = true;
+                }
 
-                if (CFG.Current.TimeActEditor_DisplayEventRow_ParamRefInfo)
-                    Decorator.DisplayParamRefInfo(evt);
+                if (ImGui.IsItemVisible())
+                {
+                    if (CFG.Current.TimeActEditor_DisplayEventRow_EnumInfo)
+                        Decorator.DisplayEnumInfo(evt);
 
-                if (CFG.Current.TimeActEditor_DisplayEventRow_DataAliasInfo)
-                    Decorator.DisplayAliasEnumInfo(evt);
+                    if (CFG.Current.TimeActEditor_DisplayEventRow_ParamRefInfo)
+                        Decorator.DisplayParamRefInfo(evt);
 
-                if (CFG.Current.TimeActEditor_DisplayEventRow_ProjectEnumInfo)
-                    Decorator.DisplayProjectEnumInfo(evt);
+                    if (CFG.Current.TimeActEditor_DisplayEventRow_DataAliasInfo)
+                        Decorator.DisplayAliasEnumInfo(evt);
+
+                    if (CFG.Current.TimeActEditor_DisplayEventRow_ProjectEnumInfo)
+                        Decorator.DisplayProjectEnumInfo(evt);
+                }
 
                 SelectionHandler.ContextMenu.TimeActEventMenu(isSelected, i.ToString());
 
@@ -1040,8 +1130,15 @@ public class TimeActEditorScreen : EditorScreen
         if (Smithbox.ProjectType == ProjectType.Undefined)
             return;
 
-        if (AnimationBank.IsLoaded)
-            AnimationBank.SaveTimeAct(SelectionHandler.ContainerInfo, SelectionHandler.ContainerBinder);
+        if (AnimationBank.IsLoaded && !AnimationBank.IsSaving)
+        {
+            TaskLogs.AddLog("Modified file will now be saved.");
+            AnimationBank.SaveTimeActTask(SelectionHandler.ContainerInfo, SelectionHandler.ContainerBinder);
+        }
+        else if (AnimationBank.IsSaving)
+        {
+            TaskLogs.AddLog("Modified file is already in the process of being saved.");
+        }
     }
 
     public void SaveAll()
@@ -1049,8 +1146,15 @@ public class TimeActEditorScreen : EditorScreen
         if (Smithbox.ProjectType == ProjectType.Undefined)
             return;
 
-        if (AnimationBank.IsLoaded)
-            AnimationBank.SaveTimeActs();
+        if (AnimationBank.IsLoaded && !AnimationBank.IsSaving)
+        {
+            TaskLogs.AddLog("Modified files will now be saved.");
+            AnimationBank.SaveTimeActsTask();
+        }
+        else if (AnimationBank.IsSaving)
+        {
+            TaskLogs.AddLog("Modified files are already in the process of being saved.");
+        }
     }
 
     private void ResetActionManager()

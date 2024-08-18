@@ -36,8 +36,11 @@ public class MapPropertyEditor
 
     private IViewport _viewport;
 
-    public MapPropertyEditor(ViewportActionManager manager, MapPropertyCache propCache, IViewport viewport)
+    private MapEditorScreen Screen;
+
+    public MapPropertyEditor(MapEditorScreen screen, ViewportActionManager manager, MapPropertyCache propCache, IViewport viewport)
     {
+        Screen = screen;
         ContextActionManager = manager;
         _propCache = propCache;
         _viewport = viewport;
@@ -707,7 +710,7 @@ public class MapPropertyEditor
     /// <summary>
     /// Displays property context menu.
     /// </summary>
-    private void DisplayPropContextMenu(ViewportSelection selection, PropertyInfo prop, object obj)
+    private void DisplayPropContextMenu(ViewportSelection selection, PropertyInfo prop, object obj, int arrayIndex)
     {
         if (ImGui.IsItemClicked(ImGuiMouseButton.Right))
         {
@@ -728,6 +731,22 @@ public class MapPropertyEditor
             {
                 RequestedSearchProperty = prop;
                 EditorCommandQueue.AddCommand($@"map/propsearch/{prop.Name}");
+            }
+
+
+            if (Screen.MapQueryHandler.IsOpen)
+            {
+                if (ImGui.Selectable("Add to Property Filter"))
+                {
+                    Screen.MapQueryHandler.AddPropertyFilterInput(prop, arrayIndex);
+                }
+            }
+            if (Screen.MapQueryEditHandler.IsOpen)
+            {
+                if (ImGui.Selectable("Add to Property Filter"))
+                {
+                    Screen.MapQueryEditHandler.AddPropertyFilterInput(prop, arrayIndex);
+                }
             }
 
             // Position - Copy/Paste
@@ -879,7 +898,7 @@ public class MapPropertyEditor
         (bool, bool) propEditResults = PropertyRow(type, oldval, out newval, prop);
         var changed = propEditResults.Item1;
         var committed = propEditResults.Item2;
-        DisplayPropContextMenu(selection, prop, obj);
+        DisplayPropContextMenu(selection, prop, obj, arrayIndex);
         if (ImGui.IsItemActive() && !ImGui.IsWindowFocused())
         {
             ImGui.SetItemDefaultFocus();

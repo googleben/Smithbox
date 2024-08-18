@@ -12,7 +12,7 @@ namespace StudioCore.Editors.MapEditor.MapQuery;
 
 public class MapQueryBank
 {
-    private MapQueryEngine Engine;
+    private IMapQueryEngine Engine;
 
     public bool MapBankInitialized = false;
 
@@ -20,7 +20,7 @@ public class MapQueryBank
 
     public Dictionary<string, IMsb> MapList = new Dictionary<string, IMsb>();
 
-    public MapQueryBank(MapQueryEngine engine) 
+    public MapQueryBank(IMapQueryEngine engine) 
     {
         Engine = engine;
     }
@@ -51,16 +51,45 @@ public class MapQueryBank
     {
         MapResources = new List<ResourceDescriptor>();
 
-        var fs = Engine._targetProjectFiles ? Smithbox.ProjectFS : Smithbox.VanillaFS;
-        string mapDir = "/map/mapstudio";
-
-        foreach (var entry in fs.GetFileNamesWithExtensions(mapDir, ".msb.dcx"))
+        var fs = Engine.GetProjectFileUsage() ? Smithbox.ProjectFS : Smithbox.VanillaFS;
+        
+        if (Smithbox.ProjectType is ProjectType.DS2 or ProjectType.DS2S)
         {
-            var name = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(entry));
-            ResourceDescriptor ad = MapLocator.GetMapMSB(name);
-            if (ad.AssetPath != null)
+            var mapDir = $"{Smithbox.GameRoot}/map/";
+
+            if (Engine.GetProjectFileUsage())
             {
-                MapResources.Add(ad);
+                mapDir = $"{Smithbox.ProjectRoot}/map/";
+            }
+
+            foreach (var entry in Directory.EnumerateDirectories(mapDir))
+            {
+                foreach (var fileEntry in Directory.EnumerateFiles(entry))
+                {
+                    if (fileEntry.Contains(".msb"))
+                    {
+                        var name = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(fileEntry));
+                        ResourceDescriptor ad = MapLocator.GetMapMSB(name);
+                        if (ad.AssetPath != null)
+                        {
+                            MapResources.Add(ad);
+                        }
+                    }
+                }
+            }
+        }
+        else
+        {
+            var mapDir = $"{Smithbox.GameRoot}/map/mapstudio/";
+
+            foreach (var entry in fs.GetFileNamesWithExtensions(mapDir, ".msb.dcx"))
+            {
+                var name = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(entry));
+                ResourceDescriptor ad = MapLocator.GetMapMSB(name);
+                if (ad.AssetPath != null)
+                {
+                    MapResources.Add(ad);
+                }
             }
         }
     }
@@ -71,6 +100,9 @@ public class MapQueryBank
 
         foreach (var resource in MapResources)
         {
+            if (resource == null)
+                continue;
+
             var name = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(resource.AssetPath));
             IMsb msb = null;
 
