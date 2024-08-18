@@ -29,7 +29,7 @@ namespace StudioCore.Editors.FsBrowser.BrowserFs
             this.getDataFunc = getDataFunc;
         }
         
-        public override void Load()
+        internal override void Load()
         {
             data = getDataFunc();
             tpf = TPF.Read(data.Value);
@@ -90,7 +90,7 @@ namespace StudioCore.Editors.FsBrowser.BrowserFs
             this.name = name;
         }
 
-        public override void Load()
+        internal override void Load()
         {
             this.isInitialized = true;
         }

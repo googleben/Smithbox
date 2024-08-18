@@ -3,6 +3,7 @@ using SoulsFormats;
 using StudioCore.Editors.FsBrowser.BrowserFs;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 namespace StudioCore.Editors.FsBrowser.BrowserFs
 {
@@ -72,7 +73,7 @@ namespace StudioCore.Editors.FsBrowser.BrowserFs
         }
 
         public override bool CanView => true;
-        public override void Load()
+        internal override void Load()
         {
             data = getDataFunc();
             reader = new(data.Value);
@@ -105,14 +106,14 @@ namespace StudioCore.Editors.FsBrowser.BrowserFs
     
     public class Bnd4FsEntry : BndFsEntry
     {
-        private BND3Reader reader = null;
+        private BND4Reader reader = null;
         
         public Bnd4FsEntry(string name, Func<Memory<byte>> getDataFunc) : base(name, getDataFunc)
         {
         }
 
         public override bool CanView => true;
-        public override void Load()
+        internal override void Load()
         {
             data = getDataFunc();
             reader = new(data.Value);
@@ -137,9 +138,130 @@ namespace StudioCore.Editors.FsBrowser.BrowserFs
             {
                 ReaderRows(reader, row);
                 row("Compression", reader.Compression.ToString());
-                row("Unk18", reader.Unk18.ToString());
+                row("Extended", reader.Extended.ToString());
+                row("Unicode", reader.Unicode.ToString());
+                row("Unk04", reader.Unk04.ToString());
+                row("Unk05", reader.Unk05.ToString());
             });
             ChildrenGui(reader);
+        }
+    }
+    
+    public class Bxf3FsEntry : BndFsEntry
+    {
+        private BXF3Reader reader = null;
+        private Func<Memory<byte>> getBhdFunc;
+        private Memory<byte>? bhdData = null;
+        
+        public Bxf3FsEntry(string name, Func<Memory<byte>> getDataFunc, Func<Memory<byte>> getBhdFunc) : base(name, getDataFunc)
+        {
+            this.getBhdFunc = getBhdFunc;
+        }
+
+        public override bool CanView => true;
+        internal override void Load()
+        {
+            data = getDataFunc();
+            bhdData = getBhdFunc();
+            reader = new(bhdData.Value, data.Value);
+            SetupChildren(reader);
+            isInitialized = true;
+        }
+
+        internal override void UnloadInner()
+        {
+            Children.ForEach(c => c.Unload());
+            Children.Clear();
+            reader?.Dispose();
+            reader = null;
+            data = null;
+            bhdData = null;
+            isInitialized = false;
+        }
+
+        public override void OnGui()
+        {
+            ImGui.Text($"BXF3: {Name}");
+            PropertyTable("BXF", (row) =>
+            {
+                ReaderRows(reader, row);
+            });
+            ChildrenGui(reader);
+        }
+    }
+    public class Bxf4FsEntry : BndFsEntry
+    {
+        private BXF4Reader reader = null;
+        private Func<Memory<byte>> getBhdFunc;
+        private Memory<byte>? bhdData = null;
+        
+        public Bxf4FsEntry(string name, Func<Memory<byte>> getDataFunc, Func<Memory<byte>> getBhdFunc) : base(name, getDataFunc)
+        {
+            this.getBhdFunc = getBhdFunc;
+        }
+
+        public override bool CanView => true;
+        internal override void Load()
+        {
+            data = getDataFunc();
+            bhdData = getBhdFunc();
+            reader = new(bhdData.Value, data.Value);
+            SetupChildren(reader);
+            isInitialized = true;
+        }
+
+        internal override void UnloadInner()
+        {
+            Children.ForEach(c => c.Unload());
+            Children.Clear();
+            reader?.Dispose();
+            reader = null;
+            data = null;
+            bhdData = null;
+            isInitialized = false;
+        }
+
+        public override void OnGui()
+        {
+            ImGui.Text($"BXF4: {Name}");
+            PropertyTable("BXF", (row) =>
+            {
+                ReaderRows(reader, row);
+                row("Extended", reader.Extended.ToString());
+                row("Unicode", reader.Unicode.ToString());
+                row("Unk04", reader.Unk04.ToString());
+                row("Unk05", reader.Unk05.ToString());
+            });
+            ChildrenGui(reader);
+        }
+    }
+
+    public class Bhd3FsEntry : Bxf3FsEntry
+    {
+        public override bool CanHaveChildren => false;
+
+        private static byte[] EmptyBdt = System.Text.Encoding.ASCII.GetBytes("BDF3" + "07D7R6")
+            .Concat(new byte[] { 0, 0, 0, 0, 0, 0 })
+            .ToArray();
+
+        private static Memory<byte> EmptyBdtMemory = new Memory<byte>(EmptyBdt);
+        public Bhd3FsEntry(string name, Func<Memory<byte>> getBhdData) : base(name, () => EmptyBdtMemory, getBhdData) {}
+
+        public override void OnGui()
+        {
+            base.OnGui();
+            ImGui.Text($"Note: To view the files described in this bhd, go to the corresponding bdt (should be named \"{Name.Replace("bhd", "bdt")}\").");
+        }
+    }
+    public class Bhd4FsEntry : Bxf4FsEntry
+    {
+        public override bool CanHaveChildren => false;
+        public Bhd4FsEntry(string name, Func<Memory<byte>> getBhdData) : base(name, () => new Memory<byte>(), getBhdData) {}
+        
+        public override void OnGui()
+        {
+            base.OnGui();
+            ImGui.Text($"Note: To view the files described in this bhd, go to the corresponding bdt (should be named \"{Name.Replace("bhd", "bdt")}\").");
         }
     }
     
@@ -163,7 +285,7 @@ namespace StudioCore.Editors.FsBrowser.BrowserFs
             inner = FsEntry.TryGetFor(name, getDataFunc);
         }
     
-        public override void Load()
+        internal override void Load()
         {
             inner?.Load();
             isInitialized = true;

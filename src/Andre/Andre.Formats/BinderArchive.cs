@@ -102,25 +102,36 @@ namespace Andre.Formats
             this.BhdWasEncrypted = wasEncrypted;
         }
 
+        public static bool IsBhdEncrypted(Memory<byte> bhd)
+        {
+            string sig = "";
+            try
+            {
+                sig = System.Text.Encoding.ASCII.GetString(bhd.Span[..4]);
+            }
+            catch
+            {
+                //assume this means it's encrypted
+                return true;
+            }
+
+            return sig != "BHD5";
+        }
+
+        public static byte[] Decrypt(Memory<byte> encryptedBhd, string bhdPath, Game game)
+        {
+            return NativeRsa.Decrypt(encryptedBhd, ArchiveKeys.GetKey(bhdPath, game), ThreadsForDecryption);
+        }
+
         public BinderArchive(string bhdPath, string bdtPath, Game game)
         {
             using var file = MemoryMappedFile.CreateFromFile(bhdPath, FileMode.Open, null, 0, MemoryMappedFileAccess.Read);
             using var accessor = file.CreateMemoryAccessor(0, 0, MemoryMappedFileAccess.Read);
-            string sig = "";
-            try
-            {
-                sig = System.Text.Encoding.ASCII.GetString(accessor.Memory.Span[..4]);
-            }
-            catch
-            {
-                // ignored
-                //assume this means it's encrypted
-            }
 
-            if (sig != "BHD5")
+            if (IsBhdEncrypted(accessor.Memory))
             {
                 //encrypted
-                var decrypted = NativeRsa.Decrypt(accessor.Memory, ArchiveKeys.GetKey(bhdPath, game), ThreadsForDecryption);
+                var decrypted = Decrypt(accessor.Memory, bhdPath, game);
                 bhd = BHD5.Read(decrypted, game.AsBhdGame()!.Value);
                 BhdWasEncrypted = true;
             }

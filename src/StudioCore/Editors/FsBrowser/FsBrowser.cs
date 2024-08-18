@@ -1,8 +1,8 @@
 ﻿using Andre.IO.VFS;
-using HKLib.hk2018.TypeRegistryTest;
 using ImGuiNET;
 using StudioCore.Editor;
 using StudioCore.Editors.FsBrowser.BrowserFs;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
@@ -44,12 +44,12 @@ namespace StudioCore.Editors.FsBrowser
 
         public void Save()
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         public void SaveAll()
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
 
         public void OnGUI(string[] commands)
@@ -99,9 +99,10 @@ namespace StudioCore.Editors.FsBrowser
                 {
                     if (selected.CanView)
                     {
-                        if (!selected.IsInitialized)
-                            selected.Load();
-                        selected.OnGui();
+                        if (!selected.IsInitialized && !selected.IsLoading)
+                            selected.LoadAsync();
+                        if (selected.IsInitialized) selected.OnGui();
+                        else ImGui.Text("Loading...");
                     }
                     else
                     {
@@ -119,20 +120,22 @@ namespace StudioCore.Editors.FsBrowser
         private void Traverse(FsEntry e, string parentIdStr)
         {
             string id = $"{parentIdStr}##{e.Name}";
-            var flags = ImGuiTreeNodeFlags.None;
+            var flags = ImGuiTreeNodeFlags.OpenOnDoubleClick;
             if (e is VirtualFileSystemFsEntry)
                 flags |= ImGuiTreeNodeFlags.CollapsingHeader;
             if (!e.CanHaveChildren)
                 flags |= ImGuiTreeNodeFlags.Leaf;
             if (selected == e)
                 flags |= ImGuiTreeNodeFlags.Selected;
-            ImGui.SetNextItemOpen(e.CanHaveChildren && e.IsInitialized);
+            bool shouldBeOpen = e.CanHaveChildren && (e.IsInitialized || e.IsLoading);
+            ImGui.SetNextItemOpen(shouldBeOpen);
             bool isOpen = ImGui.TreeNodeEx(id, flags, e.Name);
             if (ImGui.IsItemClicked())
             {
+                Console.WriteLine(id);
                 if (!e.IsInitialized)
                 {
-                    e.Load();
+                    e.LoadAsync();
                     Select(e);
                 }
                 else if (!e.CanHaveChildren)
@@ -144,15 +147,26 @@ namespace StudioCore.Editors.FsBrowser
             
             if (isOpen)
             {
-                if (!e.IsInitialized) e.Load();
-                foreach (var child in e.Children.OrderBy(f => f.Name.ToLower()))
+                //if (!e.IsInitialized && e.CanHaveChildren) e.LoadAsync();
+                //IsInitialized may have changed, so re-check
+                shouldBeOpen = e.CanHaveChildren && (e.IsInitialized || e.IsLoading);
+                
+                //nodes that have CanHaveChildren = false will be set to be leaf nodes, but leaf nodes always
+                //return true from ImGui.TreeNode, so we need to double-check shouldBeOpen here so that
+                //we don't erroneously display children, such as in the case of a BHD file, since they
+                //override CanHaveChildren to be false but still populate the Children list.
+                if (shouldBeOpen)
                 {
-                    Traverse(child, id);
+                    if (e.IsLoading)
+                    {
+                        ImGui.TreeNodeEx("Loading...", ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.Leaf);
+                    }
+                    foreach (var child in e.Children.OrderBy(f => f.Name.ToLower()))
+                    {
+                        Traverse(child, id);
+                    }
                 }
                 if (!flags.HasFlag(ImGuiTreeNodeFlags.NoTreePushOnOpen)) ImGui.TreePop();
-            } else if (e.IsInitialized)
-            {
-                e.UnloadInner();
             }
         }
 

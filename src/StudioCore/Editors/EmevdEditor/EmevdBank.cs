@@ -2,6 +2,7 @@
 using SoulsFormats;
 using StudioCore.Core;
 using StudioCore.Locators;
+using StudioCore.Platform;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -131,45 +132,34 @@ public static class EmevdBank
     // parambank process here as emevd it within regulation.bin
     private static void SaveDS2EventScripts()
     {
-        var dir = Smithbox.GameRoot;
-        var mod = Smithbox.ProjectRoot;
-
-        if (!File.Exists($@"{dir}\enc_regulation.bnd.dcx"))
+        string regulation = "enc_regulation.bnd.dcx";
+        
+        if (!Smithbox.VanillaFS.FileExists(regulation))
         {
             TaskLogs.AddLog("Cannot locate regulation. Save failed.", LogLevel.Error, TaskLogs.LogPriority.High);
             return;
         }
 
-        var regulation = $@"{mod}\enc_regulation.bnd.dcx";
         BND4 emevdBnd;
+        var writeFs = Utils.GetFSForWrites();
 
-        if (!File.Exists(regulation))
+        if (!writeFs.FileExists(regulation))
         {
             // If there is no mod file, check the base file. Decrypt it if you have to.
-            regulation = $@"{dir}\enc_regulation.bnd.dcx";
+            var vanillaData = Smithbox.VanillaFS.ReadFile(regulation).Value;
+            // Decrypt the file
+            emevdBnd = SFUtil.DecryptDS2Regulation(vanillaData);
 
-            if (!BND4.Is($@"{dir}\enc_regulation.bnd.dcx"))
+            // Since the file is encrypted, check for a backup. If it has none, then make one and write a decrypted one.
+            if (!Smithbox.VanillaRealFS.FileExists($"{regulation}.bak"))
             {
-                // Decrypt the file
-                emevdBnd = SFUtil.DecryptDS2Regulation(regulation);
-
-                // Since the file is encrypted, check for a backup. If it has none, then make one and write a decrypted one.
-                if (!File.Exists($@"{regulation}.bak"))
-                {
-                    File.Copy(regulation, $@"{regulation}.bak", true);
-                    emevdBnd.Write(regulation);
-                }
-            }
-            // No need to decrypt
-            else
-            {
-                emevdBnd = BND4.Read(regulation);
+                Smithbox.VanillaRealFS.WriteFile($"{regulation}.bak", vanillaData.ToArray());
+                Smithbox.VanillaRealFS.WriteFile(regulation, emevdBnd.Write());
             }
         }
-        // Mod file exists, use that.
         else
         {
-            emevdBnd = BND4.Read(regulation);
+            emevdBnd = writeFs.ReadSoulsFile<BND4>(regulation);
         }
 
         // Write in edited EMEVD here
@@ -197,9 +187,8 @@ public static class EmevdBank
                 }
             }
         }
-
-
-        Utils.WriteWithBackup(dir, mod, @"enc_regulation.bnd.dcx", emevdBnd);
+        
+        Utils.WriteWithBackup(Smithbox.VanillaRealFS, writeFs, @"enc_regulation.bnd.dcx", emevdBnd);
         emevdBnd.Dispose();
     }
 
@@ -267,37 +256,17 @@ public static class EmevdBank
     // parambank process here as emevd it within regulation.bin
     private static void LoadDS2EventScripts()
     {
-        var dir = Smithbox.GameRoot;
-        var mod = Smithbox.ProjectRoot;
 
-        var regulationPath = $@"{mod}\enc_regulation.bnd.dcx";
-        if (!File.Exists(regulationPath))
-        {
-            regulationPath = $@"{dir}\enc_regulation.bnd.dcx";
-        }
+        var regulationPath = $@"enc_regulation.bnd.dcx";
 
         BND4 emevdBnd = null;
-        if (!BND4.Is(regulationPath))
+        try
         {
-            try
-            {
-                emevdBnd = SFUtil.DecryptDS2Regulation(regulationPath);
-            }
-            catch (Exception e)
-            {
-                PlatformUtils.Instance.MessageBox($"Regulation load failed: {regulationPath} - {e.Message}", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
+            emevdBnd = SFUtil.DecryptDS2Regulation(Smithbox.FS.ReadFile(regulationPath).Value);
         }
-        else
+        catch (Exception e)
         {
-            try
-            {
-                emevdBnd = BND4.Read(regulationPath);
-            }
-            catch (Exception e)
-            {
-                PlatformUtils.Instance.MessageBox($"Regulation load failed: {regulationPath} - {e.Message}", "Warning", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            }
+            TaskLogs.AddLog($"Regulation load failed: {regulationPath} - {e.Message}", LogLevel.Warning, TaskLogs.LogPriority.High, e);
         }
 
         LoadScriptsFromBinder(emevdBnd);

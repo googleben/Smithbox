@@ -14,6 +14,7 @@ namespace Andre.IO.VFS
         private List<BinderVirtualFile> fileList;
         private Dictionary<string, BinderVirtualFile> files;
         private BinderVirtualDirectory root;
+        private List<(string, BHD5.FileHeader)> fileHeaders;
         
         public override bool IsReadOnly => true;
         public override VirtualDirectory FsRoot => root;
@@ -24,6 +25,7 @@ namespace Andre.IO.VFS
             this.dictionary = dictionary;
             files = new();
             int numFiles = binders.Sum(b => b.Buckets.Sum(bucket => bucket.Count));
+            fileHeaders = new();
 
             fileList = new(numFiles);
             root = new BinderVirtualDirectory("");
@@ -37,6 +39,7 @@ namespace Andre.IO.VFS
                     if (this.dictionary.GetPath(h.FileNameHash, out string? p))
                     {
                         p = p.ToLower();
+                        fileHeaders.Add((p, h));
                         if (this.files.ContainsKey(p))
                         {
                             Console.WriteLine($"Duplicate file for name \"{p}\"!");
@@ -71,37 +74,9 @@ namespace Andre.IO.VFS
                 }
             }
         }
-        public static BinderVirtualFileSystem FromDS1(string folder)
-        {
-            var binders = Directory.GetFiles(folder, "*.bdt", SearchOption.AllDirectories)
-                .Select(bdt => new BinderArchive(bdt.Replace(".bdt", ".bhd"), bdt, Game.DS1))
-                .ToArray();
-            var dictionary = new BhdDictionary(File.ReadAllText(@"Resources\DarkSouls1Dictionary.txt"), BHD5.Game.DarkSouls1);
-            return new(binders, dictionary);
-        }
 
-        public static BinderVirtualFileSystem FromDS2(string folder)
-        {
-            var binders = Directory.GetFiles(folder, "*.bdt", SearchOption.AllDirectories)
-                .Select(bdt => new BinderArchive(bdt.Replace(".bdt", ".bhd"), bdt, Game.DS2S))
-                .ToArray();
-            var dictionary = new BhdDictionary(File.ReadAllText(@"Resources\DarkSouls2Dictionary.txt"), BHD5.Game.DarkSouls2);
-            return new(binders, dictionary);
-        }
-        
-        public static BinderVirtualFileSystem FromEldenRing(string folder)
-        {
-            var binders = Directory.GetFiles(folder, "*.bdt", SearchOption.AllDirectories)
-                .Where(x => !x.Contains("bhd5"))
-                .Select(bdt => new BinderArchive(bdt.Replace(".bdt", ".bhd"), bdt, Game.ER))
-                .ToArray();
-            var dictionary = new BhdDictionary(File.ReadAllText(@"Resources\EldenRingDictionary.txt"), BHD5.Game.EldenRing);
-            return new(binders, dictionary);
-        }
-
-        public static BinderVirtualFileSystem FromGameFolder(string folder, Game game)
-        {
-            BhdDictionary dictionary = game switch
+        public static BhdDictionary GetDictionaryForGame(Game game)
+            => game switch
             {
                 Game.DES => throw new NotImplementedException(),
                 Game.DS1 => new(File.ReadAllText(@"Resources\DarkSoulsDictionary.txt"), BHD5.Game.DarkSouls1),
@@ -115,6 +90,10 @@ namespace Andre.IO.VFS
                 Game.DS2 => throw new NotImplementedException(),
                 _ => throw new ArgumentOutOfRangeException(nameof(game), game, null)
             };
+        
+        public static BinderVirtualFileSystem FromGameFolder(string folder, Game game)
+        {
+            BhdDictionary dictionary = GetDictionaryForGame(game);
             var binders = BinderArchive.FindBHDs(folder, game)
                 .Select(s => new BinderArchive(s, s.Replace(".bhd5", ".bdt").Replace(".bhd", ".bdt"), game))
                 .ToArray();
@@ -176,6 +155,8 @@ namespace Andre.IO.VFS
             return fileList;
         }
 
+        public IEnumerable<(string, BHD5.FileHeader)> FileHeaders => fileHeaders;
+        
         public class BinderVirtualFile(string? name, BHD5.FileHeader fileHeader, FileStream bdt) : VirtualFile
         {
             public string? Name { get; } = name;

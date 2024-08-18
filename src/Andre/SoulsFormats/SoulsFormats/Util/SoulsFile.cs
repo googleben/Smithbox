@@ -53,6 +53,18 @@ namespace SoulsFormats
         }
 
         /// <summary>
+        /// Returns true if the file appears to be a file of this type.
+        /// </summary>
+        public static bool Is(Memory<byte> data)
+        {
+            if (data.Length == 0) return false;
+            
+            var br = new BinaryReaderEx(false, data);
+            var dummy = new TFormat();
+            return dummy.Is(SFUtil.GetDecompressedBR(br, out _));
+        }
+
+        /// <summary>
         /// Loads file data from a BinaryReaderEx.
         /// </summary>
         protected virtual void Read(BinaryReaderEx br)
@@ -135,6 +147,15 @@ namespace SoulsFormats
         /// Returns whether the bytes appear to be a file of this type and reads it if so.
         /// </summary>
         public static bool IsRead(byte[] bytes, out TFormat file)
+        {
+            var br = new BinaryReaderEx(false, bytes);
+            return IsRead(br, out file);
+        }
+        
+        /// <summary>
+        /// Returns whether the bytes appear to be a file of this type and reads it if so.
+        /// </summary>
+        public static bool IsRead(Memory<byte> bytes, out TFormat file)
         {
             var br = new BinaryReaderEx(false, bytes);
             return IsRead(br, out file);

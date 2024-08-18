@@ -1,6 +1,13 @@
-﻿using ImGuiNET;
+﻿using Andre.IO.VFS;
+using ImGuiNET;
+using Microsoft.Extensions.Logging;
+using StudioCore.Resource;
+using StudioCore.Tasks;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace StudioCore.Editors.FsBrowser.BrowserFs
 {
@@ -18,18 +25,58 @@ namespace StudioCore.Editors.FsBrowser.BrowserFs
 
         public Action<FsEntry>? onUnload;
 
-        public void Load(Action<FsEntry> onUnload)
+        private BlockingCollection<Action>? tasks;
+
+        private Task? loadingTask = null;
+        public bool IsLoading => loadingTask != null;
+
+        //TODO: Replace this with a more general solution for project-wide off-gui tasks
+        public Task LoadAsync()
+        {
+            if (loadingTask != null) return loadingTask;
+            var cts = new TaskCompletionSource();
+            loadingTask = cts.Task;
+            if (tasks == null)
+            {
+                tasks = new();
+                var t = new Thread(() =>
+                {
+                    while (true)
+                    {
+                        try
+                        {
+                            tasks.Take()();
+                        }
+                        catch (Exception e)
+                        {
+                            TaskLogs.AddLog("Error on worker thread", LogLevel.Error, TaskLogs.LogPriority.High, e);
+                        }
+                    }
+                }) { IsBackground = true };
+                t.Start();
+            }
+            tasks.Add(() =>
+            {
+                Load();
+                cts.SetResult();
+                loadingTask = null;
+            });
+            return loadingTask;
+        }
+
+        internal void Load(Action<FsEntry> onUnload)
         {
             this.onUnload = onUnload;
             Load();
         }
         
-        public abstract void Load();
+        internal abstract void Load();
 
         internal abstract void UnloadInner();
 
         public void Unload()
         {
+            if (!IsInitialized) return;
             UnloadInner();
             if (onUnload != null)
             {
@@ -63,11 +110,11 @@ namespace StudioCore.Editors.FsBrowser.BrowserFs
             return true;
         }
 
-        public static FsEntry? TryGetFor(string fileName, Func<Memory<byte>> getDataFunc)
+        public static FsEntry? TryGetFor(string fileName, Func<Memory<byte>> getDataFunc, VirtualFileSystem? vfs = null, string? path = null)
         {
             if (fileName.EndsWith(".txt"))
                 return new TextFsEntry(fileName, getDataFunc);
-            return SoulsFileFsEntry.TryGetFor(fileName, getDataFunc);
+            return SoulsFileFsEntry.TryGetFor(fileName, getDataFunc, vfs, path);
         }
     }
 }

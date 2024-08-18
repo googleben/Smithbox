@@ -70,7 +70,7 @@ namespace Andre.IO.VFS
             File.Move(Path.Combine(rootPath, from), Path.Combine(rootPath, to), true);
         }
 
-        private class RealVirtualDirectory(string path, bool isReadOnly) : VirtualDirectory
+        public class RealVirtualDirectory(string path, bool isReadOnly) : VirtualDirectory
         {
             public string path = path;
             public bool isReadOnly = isReadOnly;
@@ -161,11 +161,14 @@ namespace Andre.IO.VFS
             }
         }
 
-        private class RealVirtualFile(string path, bool isReadOnly) : VirtualFile
+        public class RealVirtualFile(string path, bool isReadOnly) : VirtualFile
         {
             public string path = path;
             public bool isReadOnly = isReadOnly;
             public override bool IsReadOnly => isReadOnly;
+
+            public FileStream GetFileStream()
+                => File.OpenRead(path);
 
             public override Memory<byte> GetData()
             {

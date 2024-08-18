@@ -7,7 +7,11 @@ namespace Andre.IO.VFS;
 
 /// <summary>
 /// Virtual file system used to abstract file system operations on a variety of sources, such as raw filesystem, a zip
-/// file, or binders
+/// file, or binders.
+/// 
+/// Within the context of a virtual filesystem object, all paths are relative to the object that accepts the path.
+/// Paths are sometimes allowed to have a leading or trailing slash, but no guarantees are made.
+/// All functions should work with either "/" or "\" as the path separator, or a mix of both.
 /// </summary>
 public abstract class VirtualFileSystem
 {
@@ -44,12 +48,31 @@ public abstract class VirtualFileSystem
     public bool TryGetFile(string path, [MaybeNullWhen(false)] out VirtualFile file) 
         => TryGetFile(new VFSPath(path), out file);
 
+    /// <summary>
+    /// Reads a SoulsFile from a given path.
+    /// Will throw an exception if the file does not exist.
+    /// </summary>
+    /// <param name="path"></param>
+    /// <typeparam name="T"></typeparam>
+    /// <returns></returns>
     public T ReadSoulsFile<T>(string path) where T : SoulsFile<T>, new()
         => SoulsFile<T>.Read(ReadFile(path).Value);
     
+    /// <summary>
+    /// Attempts to read a file from a given path.
+    /// Returns null if the file cannot be found.
+    /// </summary>
+    /// <param name="path"></param>
+    /// <returns></returns>
     public Memory<byte>? ReadFile(string path)
         => GetFile(path)?.GetData();
     
+    /// <summary>
+    /// Gets the VirtualFile object that represents a file at a given path.
+    /// Returns null if the file cannot be found.
+    /// </summary>
+    /// <param name="path"></param>
+    /// <returns></returns>
     public VirtualFile? GetFile(string path)
     {
         TryGetFile(path, out var f);
@@ -78,11 +101,23 @@ public abstract class VirtualFileSystem
     /// <returns></returns>
     public abstract bool DirectoryExists(VFSPath path);
 
+    /// <summary>
+    /// Gets the VirtualDirectory object that represents a given directory.
+    /// Returns null if the directory cannot be found.
+    /// </summary>
+    /// <param name="path"></param>
+    /// <returns></returns>
     public VirtualDirectory? GetDirectory(string path)
     {
         return GetDirectory(new VFSPath(path));
     }
 
+    /// <summary>
+    /// Gets the VirtualDirectory object that represents a given directory.
+    /// Returns null if the directory cannot be found.
+    /// </summary>
+    /// <param name="path"></param>
+    /// <returns></returns>
     public VirtualDirectory? GetDirectory(VFSPath path)
     {
         var currDir = FsRoot;
@@ -98,6 +133,12 @@ public abstract class VirtualFileSystem
         return currDir;
     }
 
+    /// <summary>
+    /// Tries to get the VirtualDirectory object that represents a given directory.
+    /// </summary>
+    /// <param name="path"></param>
+    /// <param name="file"></param>
+    /// <returns>true if the file was found, false otherwise</returns>
     public bool TryGetDirectory(string path, [MaybeNullWhen(false)] out VirtualDirectory directory)
     {
         directory = GetDirectory(path);

@@ -505,17 +505,17 @@ namespace SoulsFormats
         /// <summary>
         /// Decrypts and unpacks DS2's regulation BND4.
         /// </summary>
-        public static BND4 DecryptDS2Regulation(byte[] bytes)
+        public static BND4 DecryptDS2Regulation(Memory<byte> bytes)
         {
             if (BND4.IsRead(bytes, out BND4 bnd4)) 
                 return bnd4; 
             byte[] iv = new byte[16];
             iv[0] = 0x80;
-            Array.Copy(bytes, 0, iv, 1, 11);
+            bytes[0..11].CopyTo(iv.AsMemory()[1..]);
             iv[15] = 1;
-            byte[] input = new byte[bytes.Length - 32];
-            Array.Copy(bytes, 32, input, 0, bytes.Length - 32);
-            using (var ms = new MemoryStream(input))
+            var input = bytes[32..];
+            
+            using (var ms = new MemoryStream(input.ToArray()))
             {
                 byte[] decrypted = CryptographyUtility.DecryptAesCtr(ms, ds2RegulationKey, iv);
                 return BND4.Read(decrypted);

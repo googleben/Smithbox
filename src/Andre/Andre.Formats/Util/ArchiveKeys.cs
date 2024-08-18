@@ -5,7 +5,8 @@
         public static string GetKey(string bhdPath, Game game)
         {
             string name = Path.GetFileNameWithoutExtension(bhdPath);
-            if (game >= Game.ER && Path.GetDirectoryName(bhdPath)![^2..] == "sd")
+            string dir = Path.GetDirectoryName(bhdPath) ?? "";
+            if (game >= Game.ER && dir.Length >=2 && Path.GetDirectoryName(bhdPath)![^2..] == "sd")
                 name = "sd\\" + name;
             return game switch
             {

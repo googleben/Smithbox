@@ -26,7 +26,7 @@ namespace StudioCore.Editors.FsBrowser.BrowserFs
             this.getDataFunc = getDataFunc;
         }
 
-        public override void Load()
+        internal override void Load()
         {
             data = getDataFunc();
             flver = FLVER2.Read(data.Value);

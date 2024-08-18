@@ -23,7 +23,7 @@ namespace StudioCore.Editors.FsBrowser.BrowserFs
             this.inner = new VirtualFileSystemDirectoryFsEntry(vfs, "", "");
         }
         
-        public override void Load()
+        internal override void Load()
         {
             inner.Load();
         }
@@ -55,7 +55,7 @@ namespace StudioCore.Editors.FsBrowser.BrowserFs
             this.path = $"{parentPath}/{name}";
         }
         
-        public override void Load()
+        internal override void Load()
         {
             var dir = vfs.GetDirectory(path);
             if (dir == null)
@@ -72,7 +72,7 @@ namespace StudioCore.Editors.FsBrowser.BrowserFs
             foreach (var filename in dir.EnumerateFileNames())
             {
                 var child = 
-                    TryGetFor(filename, () => vfs.ReadFile($"{path}/{filename}").Value) 
+                    TryGetFor(filename, () => vfs.ReadFile($"{path}/{filename}").Value, vfs, $"{path}/{filename}") 
                     ?? (FsEntry)new VirtualFileSystemFileFsEntry(filename);
                 children.Add(child);
             }
@@ -106,7 +106,7 @@ namespace StudioCore.Editors.FsBrowser.BrowserFs
             this.name = name;
         }
             
-        public override void Load() { }
+        internal override void Load() { }
 
         internal override void UnloadInner() { }
     

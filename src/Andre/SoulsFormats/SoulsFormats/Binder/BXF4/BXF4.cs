@@ -13,7 +13,7 @@ namespace SoulsFormats
     {
         #region Public Is
         /// <summary>
-        /// Returns true if the bytes appear to be a BXF3 header file.
+        /// Returns true if the bytes appear to be a BXF4 header file.
         /// </summary>
         public static bool IsBHD(Memory<byte> bytes)
         {
@@ -22,7 +22,7 @@ namespace SoulsFormats
         }
 
         /// <summary>
-        /// Returns true if the file appears to be a BXF3 header file.
+        /// Returns true if the file appears to be a BXF4 header file.
         /// </summary>
         public static bool IsBHD(string path)
         {
@@ -33,7 +33,7 @@ namespace SoulsFormats
         }
 
         /// <summary>
-        /// Returns true if the file appears to be a BXF3 data file.
+        /// Returns true if the file appears to be a BXF4 data file.
         /// </summary>
         public static bool IsBDT(Memory<byte> bytes)
         {
@@ -42,7 +42,7 @@ namespace SoulsFormats
         }
 
         /// <summary>
-        /// Returns true if the file appears to be a BXF3 data file.
+        /// Returns true if the file appears to be a BXF4 data file.
         /// </summary>
         public static bool IsBDT(string path)
         {
