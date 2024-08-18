@@ -1197,6 +1197,19 @@ public static class Utils
         return vec;
     }
 
+    public static string FlagsEnumToString<T>(T value) where T : struct, Enum
+    {
+        var vals = Enum.GetValues<T>();
+        var names = Enum.GetNames<T>();
+        List<string> has = [];
+        foreach (var (val, name) in vals.Zip(names))
+        {
+            if (value.HasFlag(val)) has.Add(name);
+        }
+
+        return string.Join(" | ", has);
+    }
+
     public static int GenerateRandomInt(RandomNumberGenerator randomSource, int min, int max)
     {
         double randomValue = randomSource.NextDouble();
@@ -1260,6 +1273,7 @@ public static class Utils
             }
         }
         fs.WriteFile(path, data);
+        TaskLogs.AddLog($"Successfully saved \"{Path.GetFileName(path)}\" to \"{path}\".");
     }
 
     public static bool TrySaveFile(string path, byte[] data)

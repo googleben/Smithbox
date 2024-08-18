@@ -83,6 +83,12 @@ Size=2560,1349
 Collapsed=0
 DockId=0xAEE10BF6,1
 
+[Window][FS Browser]
+Pos=0,20
+Size=2560,1349
+Collapsed=0
+DockId=0xAEE10BF6,13
+
 [Window][Viewport##Mapeditvp]
 Pos=395,40
 Size=976,1048

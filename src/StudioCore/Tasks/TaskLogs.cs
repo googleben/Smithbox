@@ -70,7 +70,11 @@ public static class TaskLogs
         {
             return;
         }
-
+        
+        #if DEBUG
+        Console.WriteLine(text);
+        #endif
+        
         Task.Run(() =>
         {
             var lockTaken = false;

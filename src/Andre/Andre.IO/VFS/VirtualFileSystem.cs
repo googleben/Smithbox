@@ -255,10 +255,10 @@ public abstract class VirtualFileSystem
 
         public VFSPath(params string[] pathComponents) : 
             this(
-                pathComponents[^1].Contains('.') ? pathComponents[0..^1] : pathComponents, 
-                pathComponents[^1].Contains('.') ? pathComponents[^1] : null) {}
+                pathComponents.Length == 0 ? pathComponents : (pathComponents[^1].Contains('.') ? pathComponents[0..^1] : pathComponents), 
+                pathComponents.Length == 0 ? null : (pathComponents[^1].Contains('.') ? pathComponents[^1] : null)) {}
 
-        public VFSPath(string path) : this(path.Replace('\\', '/').Trim().Trim('/').Split('/')) {}
+        public VFSPath(string path) : this(path.Replace('\\', '/').Trim().Trim('/').Split('/').Where(s => s != "").ToArray()) {}
 
         public override string ToString()
         {

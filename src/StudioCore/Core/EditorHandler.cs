@@ -4,6 +4,7 @@ using StudioCore.Configuration;
 using StudioCore.CutsceneEditor;
 using StudioCore.Editor;
 using StudioCore.Editors;
+using StudioCore.Editors.FsBrowser;
 using StudioCore.Editors.MapEditor;
 using StudioCore.Editors.ModelEditor;
 using StudioCore.Editors.ParamEditor;
@@ -50,6 +51,7 @@ public class EditorHandler
     public EsdEditorScreen EsdEditor;
     public TextureViewerScreen TextureViewer;
     public HavokEditorScreen HavokEditor;
+    public FsBrowser FsBrowser;
 
     public EditorHandler(IGraphicsContext _context)
     {
@@ -66,6 +68,7 @@ public class EditorHandler
         EsdEditor = new EsdEditorScreen(_context.Window, _context.Device);
         TextureViewer = new TextureViewerScreen(_context.Window, _context.Device);
         HavokEditor = new HavokEditorScreen(_context.Window, _context.Device);
+        FsBrowser = new FsBrowser(_context.Window, _context.Device);
 
         EditorList = [
             MapEditor,
@@ -74,7 +77,8 @@ public class EditorHandler
             TextEditor,
             GparamEditor,
             TextureViewer,
-            TimeActEditor
+            TimeActEditor,
+            FsBrowser,
         ];
 
         if(FeatureFlags.EnableEditor_Cutscene) 
