@@ -55,16 +55,12 @@ public class MapQueryBank
         
         if (Smithbox.ProjectType is ProjectType.DS2 or ProjectType.DS2S)
         {
-            var mapDir = $"{Smithbox.GameRoot}/map/";
+            var mapDir = $"map/";
 
-            if (Engine.GetProjectFileUsage())
-            {
-                mapDir = $"{Smithbox.ProjectRoot}/map/";
-            }
 
-            foreach (var entry in Directory.EnumerateDirectories(mapDir))
+            foreach (var (_, dir) in fs.GetDirectory(mapDir).EnumerateDirectories())
             {
-                foreach (var fileEntry in Directory.EnumerateFiles(entry))
+                foreach (var fileEntry in dir.EnumerateFileNames())
                 {
                     if (fileEntry.Contains(".msb"))
                     {
@@ -80,7 +76,7 @@ public class MapQueryBank
         }
         else
         {
-            var mapDir = $"{Smithbox.GameRoot}/map/mapstudio/";
+            var mapDir = $"map/mapstudio/";
 
             foreach (var entry in fs.GetFileNamesWithExtensions(mapDir, ".msb.dcx"))
             {

@@ -1,4 +1,5 @@
-﻿using StudioCore.Core;
+﻿using Andre.IO;
+using StudioCore.Core;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -25,43 +26,8 @@ public static class MapLocator
         if (mapid.Length != 12)
             return ad;
 
-        string preferredPath = "";
-        string backupPath = "";
-
-        // SOFTS
-        if (Smithbox.ProjectType == ProjectType.DS2S || Smithbox.ProjectType == ProjectType.DS2)
-        {
-            preferredPath = $@"map\{mapid}\{mapid}.msb";
-            backupPath = $@"map\{mapid}\{mapid}.msb";
-        }
-        // BB chalice maps
-        else if (Smithbox.ProjectType == ProjectType.BB && mapid.StartsWith("m29"))
-        {
-            preferredPath = $@"\map\MapStudio\{mapid.Substring(0, 9)}_00\{mapid}.msb.dcx";
-            backupPath = $@"\map\MapStudio\{mapid.Substring(0, 9)}_00\{mapid}.msb";
-        }
-        // DeS, DS1, DS1R
-        else if (Smithbox.ProjectType == ProjectType.DS1 || Smithbox.ProjectType == ProjectType.DS1R || Smithbox.ProjectType == ProjectType.DES)
-        {
-            preferredPath = $@"\map\MapStudio\{mapid}.msb";
-            backupPath = $@"\map\MapStudio\{mapid}.msb.dcx";
-        }
-        // BB, DS3, ER, SDT, AC6
-        else if (Smithbox.ProjectType is ProjectType.BB or ProjectType.DS3 or ProjectType.ER or ProjectType.SDT or ProjectType.AC6)
-        {
-            preferredPath = $@"\map\MapStudio\{mapid}.msb.dcx";
-            backupPath = $@"\map\MapStudio\{mapid}.msb";
-        }
-
-        if (Smithbox.FS.FileExists(preferredPath) || writemode && Smithbox.ProjectRoot != null)
-        {
-            ad.AssetPath = preferredPath;
-        }
-        else if (Smithbox.FS.FileExists(backupPath) || writemode && Smithbox.ProjectRoot != null)
-        {
-            ad.AssetPath = backupPath;
-        }
-
+        var l =  Locator.FindMsbForId(mapid, Smithbox.ProjectType.AsAndreGame().Value, Smithbox.FS, writemode);
+        ad.AssetPath = l.Value.AssetPath;
         ad.AssetName = mapid;
         return ad;
     }
@@ -164,7 +130,7 @@ public static class MapLocator
 
         if (Smithbox.ProjectType == ProjectType.BB && mapid.StartsWith("m29"))
         {
-            var path = $@"\map\{mapid.Substring(0, 9)}_00\{mapid}";
+            var path = $@"\map\{mapid[..9]}_00\{mapid}";
 
             if (Smithbox.FS.FileExists($@"{path}.nva.dcx") || writemode && Smithbox.ProjectRoot != null && Smithbox.ProjectType != ProjectType.DS1)
             {
@@ -262,7 +228,7 @@ public static class MapLocator
         }
 
         // Default
-        return mapid.Substring(0, 6) + "_00_00";
+        return mapid[..6] + "_00_00";
     }
 
     /// <summary>
