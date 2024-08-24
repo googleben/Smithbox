@@ -2,12 +2,17 @@
 using Andre.Core.Util;
 using Andre.Formats;
 using SoulsFormats;
+using System.Buffers;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
+using System.IO.MemoryMappedFiles;
 
 namespace Andre.IO.VFS
 {
-    public class BinderVirtualFileSystem : VirtualFileSystem
+    /// <summary>
+    /// A VirtualFileSystem that uses one or more BinderArchives (DVDBNDs) as its backing.
+    /// </summary>
+    public class ArchiveBinderVirtualFileSystem : VirtualFileSystem
     {
         private BinderArchive[] binders;
         private BhdDictionary dictionary;
@@ -19,7 +24,7 @@ namespace Andre.IO.VFS
         public override bool IsReadOnly => true;
         public override VirtualDirectory FsRoot => root;
 
-        public BinderVirtualFileSystem(BinderArchive[] binders, BhdDictionary dictionary)
+        public ArchiveBinderVirtualFileSystem(BinderArchive[] binders, BhdDictionary dictionary)
         {
             this.binders = binders;
             this.dictionary = dictionary;
@@ -47,7 +52,7 @@ namespace Andre.IO.VFS
                         }
                         string[] sp = p.Trim('/').Split('/');
                         string fileName = sp[^1];
-                        f = new(fileName, h, b.Bdt);
+                        f = new(fileName, h, b.Bdt, b.BdtMmf);
                         files.Add(p!, f);
                         var currDir = root;
                         foreach (string dirName in sp[..^1])
@@ -67,7 +72,7 @@ namespace Andre.IO.VFS
                     }
                     else
                     {
-                        f = new(null, h, b.Bdt);
+                        f = new(null, h, b.Bdt, b.BdtMmf);
                         Console.WriteLine($"Couldn't find name for file hash: {h.FileNameHash}");
                     }
                     fileList.Add(f);
@@ -91,7 +96,14 @@ namespace Andre.IO.VFS
                 _ => throw new ArgumentOutOfRangeException(nameof(game), game, null)
             };
         
-        public static BinderVirtualFileSystem FromGameFolder(string folder, Game game)
+        /// <summary>
+        /// Constructs an ArchiveBinderVirtualFileSystem from a game folder and the type of game.
+        /// Handles decryption of the bhds, if necessary.
+        /// </summary>
+        /// <param name="folder"></param>
+        /// <param name="game"></param>
+        /// <returns></returns>
+        public static ArchiveBinderVirtualFileSystem FromGameFolder(string folder, Game game)
         {
             BhdDictionary dictionary = GetDictionaryForGame(game);
             var binders = BinderArchive.FindBHDs(folder, game)
@@ -99,7 +111,7 @@ namespace Andre.IO.VFS
                 .ToArray();
             return new(binders, dictionary);
         }
-        
+
         public override bool TryGetFile(VirtualFileSystem.VFSPath path, [MaybeNullWhen(false)] out VirtualFile file)
         {
             if (TryGetFileInner(path.ToString().ToLower(), out var f))
@@ -134,7 +146,7 @@ namespace Andre.IO.VFS
                     file = null;
                     return false;
                 case > 1:
-                    Console.WriteLine($"Warning: Found more than one file for path: \"{canonicalPath}\", hash: {hash}");
+                    //Console.WriteLine($"Warning: Found more than one file for path: \"{canonicalPath}\", hash: {hash}");
                     break;
             }
             Console.WriteLine($"Warning: file for path \"{canonicalPath}\" wasn't cached in the file lookup table correctly. Hash: {hash}");
@@ -156,15 +168,27 @@ namespace Andre.IO.VFS
         }
 
         public IEnumerable<(string, BHD5.FileHeader)> FileHeaders => fileHeaders;
+
+        public override void Dispose()
+        {
+            base.Dispose();
+            foreach (var a in binders)
+            {
+                a.Dispose();
+            }
+        }
         
-        public class BinderVirtualFile(string? name, BHD5.FileHeader fileHeader, FileStream bdt) : VirtualFile
+        public class BinderVirtualFile(string? name, BHD5.FileHeader fileHeader, FileStream bdt, MemoryMappedFile btfMmf) : VirtualFile
         {
             public string? Name { get; } = name;
             public override bool IsReadOnly => true;
             public BHD5.FileHeader FileHeader { get; } = fileHeader;
             public FileStream Bdt { get; } = bdt;
+            private MemoryMappedFile btfMmf = btfMmf;
             
             public override Memory<byte> GetData() => FileHeader.ReadFileThreaded(Bdt);
+            public override IMemoryOwner<byte> MemoryMapData()
+                => fileHeader.GetFile(btfMmf);
         }
 
         public class BinderVirtualDirectory(string name) : VirtualDirectory

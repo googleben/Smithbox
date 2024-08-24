@@ -1,7 +1,9 @@
-﻿using DotNext.Threading;
+﻿using DotNext.IO.MemoryMappedFiles;
+using DotNext.Threading;
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.IO.MemoryMappedFiles;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
@@ -366,6 +368,11 @@ namespace SoulsFormats
                 }
                 AESKey?.Decrypt(bytes);
                 return bytes;
+            }
+
+            public IMappedMemoryOwner GetFile(MemoryMappedFile file)
+            {
+                return file.CreateMemoryAccessor(FileOffset, PaddedFileSize, MemoryMappedFileAccess.Read);
             }
         }
 

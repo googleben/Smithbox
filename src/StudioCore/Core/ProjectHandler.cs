@@ -1,5 +1,6 @@
 ﻿using Andre.IO.VFS;
 using DotNext.Collections.Generic;
+using DotNext.Threading.Tasks;
 using ImGuiNET;
 using Microsoft.AspNetCore.Components.Forms;
 using Microsoft.Extensions.Logging;
@@ -41,6 +42,10 @@ public class ProjectHandler
 
     public bool ImportRowNames = false;
 
+    public bool IsLoadingProject = false;
+    private Action? finishLoadingProject = null;
+    private bool loadingPopupOpen = false;
+
     public ProjectHandler()
     {
         CurrentProject = new Project();
@@ -51,6 +56,30 @@ public class ProjectHandler
     }
     public void OnGui()
     {
+        if (IsLoadingProject)
+        {
+            if (!loadingPopupOpen)
+            {
+                ImGui.OpenPopup("Project Loading");
+            }
+            if (ImGui.BeginPopupModal("Project Loading", ref IsLoadingProject, ImGuiWindowFlags.AlwaysAutoResize))
+            {
+                ImGui.Text("Loading project. If your bhds are encrypted, this may take a while.");
+                ImGui.EndPopup();
+            }
+            return;
+        }
+
+        if (loadingPopupOpen)
+        {
+            loadingPopupOpen = false;
+        }
+
+        if (finishLoadingProject != null)
+        {
+            finishLoadingProject();
+            finishLoadingProject = null;
+        }
         if (!RecentProjectLoad && CFG.Current.Project_LoadRecentProjectImmediately)
         {
             RecentProjectLoad = true;
@@ -84,64 +113,80 @@ public class ProjectHandler
         Smithbox.ProjectHandler.IsInitialLoad = false;
     }
 
-    public bool LoadProject(string path)
+    public Task<bool> LoadProject(string path)
     {
-        if (CurrentProject.Config == null)
+        IsLoadingProject = true;
+        async Task<bool> LoadProjectInner()
         {
-            PlatformUtils.Instance.MessageBox(
-                "Failed to load last project. Project will not be loaded after restart.",
-                "Project Load Error", MessageBoxButtons.OK);
-            return false;
+            if (CurrentProject.Config == null)
+            {
+                PlatformUtils.Instance.MessageBox("Failed to load last project. Project will not be loaded after restart.", "Project Load Error", MessageBoxButtons.OK);
+                return false;
+            }
+
+            if (path == "")
+            {
+                PlatformUtils.Instance.MessageBox($"Path parameter was empty: {path}", "Project Load Error", MessageBoxButtons.OK);
+                return false;
+            }
+
+            CurrentProject.ProjectJsonPath = path;
+
+            SetGameRootPrompt(CurrentProject);
+            CheckUnpackedState(CurrentProject);
+
+            // Only proceed if dll are found
+            if (!CheckDecompressionDLLs(CurrentProject)) return false;
+
+            var projectType = CurrentProject.Config.GameType;
+            var gameRoot = CurrentProject.Config.GameRoot;
+            var projectRoot = Path.GetDirectoryName(path) ?? "";
+            
+            //load filesystems
+            await UpdateFilesystems(projectRoot, gameRoot, projectType);
+
+            finishLoadingProject = () =>
+            {
+                Smithbox.ProjectType = projectType;
+                Smithbox.GameRoot = gameRoot;
+                Smithbox.ProjectRoot = projectRoot;
+                Smithbox.SmithboxDataRoot = $"{Smithbox.ProjectRoot}\\.smithbox";
+
+                if (Smithbox.ProjectRoot == "") TaskLogs.AddLog("Smithbox.ProjectRoot is empty!");
+
+                Smithbox.SetProgramTitle($"{CurrentProject.Config.ProjectName} - Smithbox");
+
+                MapLocator.FullMapList = null;
+                Smithbox.InitializeBanks();
+                Smithbox.InitializeNameCaches();
+                Smithbox.EditorHandler.UpdateEditors();
+
+                CFG.Current.LastProjectFile = path;
+                CFG.Save();
+
+                AddProjectToRecentList(CurrentProject);
+
+                UpdateTimer();
+
+                // Re-create this so project setup settings don't persist between projects (e.g. Import Row Names)
+                ProjectModal = new ProjectModal();
+            };
+            
+
+            return true;
         }
 
-        if(path == "")
+        var ret = Task.Run(LoadProjectInner);
+
+        ret.ContinueWith(t =>
         {
-            PlatformUtils.Instance.MessageBox(
-                $"Path parameter was empty: {path}",
-                "Project Load Error", MessageBoxButtons.OK);
-            return false;
-        }
-
-        CurrentProject.ProjectJsonPath = path;
-
-        SetGameRootPrompt(CurrentProject);
-        CheckUnpackedState(CurrentProject);
-
-        // Only proceed if dll are found
-        if (!CheckDecompressionDLLs(CurrentProject))
-            return false;
-
-        Smithbox.ProjectType = CurrentProject.Config.GameType;
-        Smithbox.GameRoot = CurrentProject.Config.GameRoot;
-        Smithbox.ProjectRoot = Path.GetDirectoryName(path);
-        Smithbox.SmithboxDataRoot = $"{Smithbox.ProjectRoot}\\.smithbox";
-        //load filesystems
-        UpdateFilesystems();
-
-        if (Smithbox.ProjectRoot == "")
-            TaskLogs.AddLog("Smithbox.ProjectRoot is empty!");
-
-        Smithbox.SetProgramTitle($"{CurrentProject.Config.ProjectName} - Smithbox");
-
-        MapLocator.FullMapList = null;
-        Smithbox.InitializeBanks();
-        Smithbox.InitializeNameCaches();
-        Smithbox.EditorHandler.UpdateEditors();
-
-        CFG.Current.LastProjectFile = path;
-        CFG.Save();
-
-        AddProjectToRecentList(CurrentProject);
-
-        UpdateTimer();
-
-        // Re-create this so project setup settings don't persist between projects (e.g. Import Row Names)
-        ProjectModal = new ProjectModal();
-
-        return true;
+            IsLoadingProject = false;
+            return t.Result;
+        });
+        return ret;
     }
 
-    public bool LoadProjectFromJSON(string jsonPath)
+    public async Task<bool> LoadProjectFromJSON(string jsonPath)
     {
         if (CurrentProject == null)
         {
@@ -156,7 +201,7 @@ public class ProjectHandler
             return false;
         }
 
-        return LoadProject(jsonPath);
+        return await LoadProject(jsonPath);
     }
 
     public void ClearProject()
@@ -171,57 +216,71 @@ public class ProjectHandler
         MapLocator.FullMapList = null;
     }
 
-    public void UpdateProjectVariables()
+    public async void UpdateProjectVariables()
     {
+        var projectType = CurrentProject.Config.GameType;
+        var gameRoot = CurrentProject.Config.GameRoot;
+        var projectRoot = 
+            Smithbox.ProjectRoot = Path.GetDirectoryName(CurrentProject.ProjectJsonPath) ?? "";
+        await UpdateFilesystems(projectRoot, gameRoot, projectType);
         Smithbox.SetProgramTitle($"{CurrentProject.Config.ProjectName} - Smithbox");
-        Smithbox.ProjectType = CurrentProject.Config.GameType;
-        Smithbox.GameRoot = CurrentProject.Config.GameRoot;
-        Smithbox.ProjectRoot = Path.GetDirectoryName(CurrentProject.ProjectJsonPath);
+        Smithbox.ProjectType = projectType;
+        Smithbox.GameRoot = gameRoot;
+        Smithbox.ProjectRoot = projectRoot;
         Smithbox.SmithboxDataRoot = $"{Smithbox.ProjectRoot}\\.smithbox";
-        UpdateFilesystems();
     }
 
-    private void UpdateFilesystems()
+    private static Task UpdateFilesystems(string? projectRoot, string? gameRoot, ProjectType projectType)
     {
-        List<VirtualFileSystem> fileSystems = [];
-        
-        //it's important that we do the project FS first, because it needs to be the first element of the
-        //filesystem list, so that its files take precedence over vanilla files.
-        if ((Smithbox.ProjectRoot ?? "") != "")
+        return Task.Run(() =>
         {
-            Smithbox.ProjectFS = new RealVirtualFileSystem(Smithbox.ProjectRoot!, false);
-            fileSystems.Add(Smithbox.ProjectFS);
-        }
-        else
-        {
-            Smithbox.ProjectFS = EmptyVirtualFileSystem.Instance;
-        }
-        
-        if ((Smithbox.GameRoot ?? "") != "")
-        {
-            Smithbox.VanillaRealFS = new RealVirtualFileSystem(CurrentProject.Config.GameRoot, false);
-            fileSystems.Add(Smithbox.VanillaRealFS);
-            var andreGame = CurrentProject.Config.GameType.AsAndreGame();
-            if (andreGame != null)
+            List<VirtualFileSystem> fileSystems = [];
+            Smithbox.ProjectFS.Dispose();
+            Smithbox.VanillaRealFS.Dispose();
+            Smithbox.VanillaBinderFS.Dispose();
+            Smithbox.VanillaFS.Dispose();
+            Smithbox.FS.Dispose();
+
+            //it's important that we do the project FS first, because it needs to be the first element of the
+            //filesystem list, so that its files take precedence over vanilla files.
+            if ((projectRoot ?? "") != "")
             {
-                Smithbox.VanillaBinderFS = BinderVirtualFileSystem.FromGameFolder(Smithbox.GameRoot, andreGame.Value);
-                fileSystems.Add(Smithbox.VanillaBinderFS);
-                Smithbox.VanillaFS = new CompundVirtualFileSystem([Smithbox.VanillaRealFS, Smithbox.VanillaBinderFS]);
+                Smithbox.ProjectFS = new RealVirtualFileSystem(projectRoot, false);
+                fileSystems.Add(Smithbox.ProjectFS);
             }
             else
             {
-                Smithbox.VanillaBinderFS = EmptyVirtualFileSystem.Instance;
-                Smithbox.VanillaFS = Smithbox.VanillaRealFS;
+                Smithbox.ProjectFS = EmptyVirtualFileSystem.Instance;
             }
-        }
-        else
-        {
-            Smithbox.VanillaRealFS = EmptyVirtualFileSystem.Instance;
-            Smithbox.VanillaFS = EmptyVirtualFileSystem.Instance;
-        }
 
-        if (fileSystems.Count == 0) Smithbox.FS = EmptyVirtualFileSystem.Instance;
-        else Smithbox.FS = new CompundVirtualFileSystem(fileSystems);
+            if ((gameRoot ?? "") != "")
+            {
+                Smithbox.VanillaRealFS = new RealVirtualFileSystem(gameRoot, false);
+                fileSystems.Add(Smithbox.VanillaRealFS);
+                var andreGame = projectType.AsAndreGame();
+                if (andreGame != null)
+                {
+                    Smithbox.VanillaBinderFS =
+                        ArchiveBinderVirtualFileSystem.FromGameFolder(gameRoot, andreGame.Value);
+                    fileSystems.Add(Smithbox.VanillaBinderFS);
+                    Smithbox.VanillaFS =
+                        new CompundVirtualFileSystem([Smithbox.VanillaRealFS, Smithbox.VanillaBinderFS]);
+                }
+                else
+                {
+                    Smithbox.VanillaBinderFS = EmptyVirtualFileSystem.Instance;
+                    Smithbox.VanillaFS = Smithbox.VanillaRealFS;
+                }
+            }
+            else
+            {
+                Smithbox.VanillaRealFS = EmptyVirtualFileSystem.Instance;
+                Smithbox.VanillaFS = EmptyVirtualFileSystem.Instance;
+            }
+
+            if (fileSystems.Count == 0) Smithbox.FS = EmptyVirtualFileSystem.Instance;
+            else Smithbox.FS = new CompundVirtualFileSystem(fileSystems);
+        });
     }
 
     public void AddProjectToRecentList(Project targetProject)
@@ -543,10 +602,11 @@ public class ProjectHandler
         {
             if (projectJsonPath.Contains("project.json"))
             {
-                if (LoadProjectFromJSON(projectJsonPath))
+                LoadProjectFromJSON(projectJsonPath).ContinueWith((t) =>
                 {
-                    Smithbox.ProjectHandler.IsInitialLoad = false;
-                }
+                    if (t.Result)
+                        Smithbox.ProjectHandler.IsInitialLoad = false;
+                });
             }
         }
     }
@@ -554,10 +614,10 @@ public class ProjectHandler
     public void LoadRecentProject()
     {
         // Only set this to false if recent project load is sucessful
-        if (LoadProjectFromJSON(Current.LastProjectFile))
+        LoadProjectFromJSON(Current.LastProjectFile).ContinueWith((t) =>
         {
-            Smithbox.ProjectHandler.IsInitialLoad = false;
-        }
+            if (t.Result) Smithbox.ProjectHandler.IsInitialLoad = false;
+        });
     }
 
 
@@ -682,16 +742,18 @@ public class ProjectHandler
             {
                 var path = p.ProjectFile;
 
-                if (LoadProjectFromJSON(path))
+                LoadProjectFromJSON(path).ContinueWith((t) =>
                 {
-                    Smithbox.ProjectHandler.IsInitialLoad = false;
-                    UpdateProjectVariables();
-                }
-                else
-                {
-                    // Remove it if it failed
-                    CFG.RemoveRecentProject(p);
-                }
+                    if (t.Result)
+                    {
+                        Smithbox.ProjectHandler.IsInitialLoad = false;
+                    }
+                    else
+                    {
+                        // Remove it if it failed
+                        CFG.RemoveRecentProject(p);
+                    }
+                });
             }
             else
             {

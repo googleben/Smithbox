@@ -1,4 +1,5 @@
 ﻿using DotNext.IO.MemoryMappedFiles;
+using System.Buffers;
 using System.Diagnostics.CodeAnalysis;
 using System.IO.MemoryMappedFiles;
 
@@ -177,6 +178,12 @@ namespace Andre.IO.VFS
                 return accessor.Memory;*/
                 var data = File.ReadAllBytes(path);
                 return new Memory<byte>(data);
+            }
+
+            public override IMemoryOwner<byte> MemoryMapData()
+            {
+                var mmf = MemoryMappedFile.CreateFromFile(path, FileMode.Open);
+                return mmf.CreateMemoryAccessor(access: MemoryMappedFileAccess.Read);
             }
 
             public override void WriteData(byte[] data)

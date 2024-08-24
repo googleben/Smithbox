@@ -34,7 +34,7 @@ public class Project
 
     /// Holds the configuration parameters from the project.json
     /// </summary>
-    public ProjectConfiguration Config;
+    public ProjectConfiguration? Config;
 
     /// <summary>
     /// Current project.json path.

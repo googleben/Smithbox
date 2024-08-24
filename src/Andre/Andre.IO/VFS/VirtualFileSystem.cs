@@ -1,4 +1,5 @@
 ﻿using SoulsFormats;
+using System.Buffers;
 using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 using System.Text.RegularExpressions;
@@ -13,8 +14,10 @@ namespace Andre.IO.VFS;
 /// Paths are sometimes allowed to have a leading or trailing slash, but no guarantees are made.
 /// All functions should work with either "/" or "\" as the path separator, or a mix of both.
 /// </summary>
-public abstract class VirtualFileSystem
+public abstract class VirtualFileSystem : IDisposable
 {
+    private HashSet<IDisposable> disposables = [];
+    
     /// <summary>
     /// Is the file system readonly
     /// </summary>
@@ -24,6 +27,16 @@ public abstract class VirtualFileSystem
     /// The directory representing the root of this filesystem
     /// </summary>
     public abstract VirtualDirectory FsRoot { get; }
+
+    public void AddDisposable(IDisposable d)
+    {
+        disposables.Add(d);
+    }
+
+    public void RemoveDisposable(IDisposable d)
+    {
+        disposables.Remove(d);
+    }
 
     /// <summary>
     /// Returns true if a given file exists
@@ -56,7 +69,14 @@ public abstract class VirtualFileSystem
     /// <typeparam name="T"></typeparam>
     /// <returns></returns>
     public T ReadSoulsFile<T>(string path) where T : SoulsFile<T>, new()
-        => SoulsFile<T>.Read(ReadFile(path).Value);
+        => SoulsFile<T>.Read(ReadFileOrThrow(path));
+
+    public Memory<byte> ReadFileOrThrow(string path)
+    {
+        var data = ReadFile(path);
+        if (!data.HasValue) throw new FileNotFoundException($"Could not find file {path}");
+        return data.Value;
+    }
     
     /// <summary>
     /// Attempts to read a file from a given path.
@@ -66,6 +86,19 @@ public abstract class VirtualFileSystem
     /// <returns></returns>
     public Memory<byte>? ReadFile(string path)
         => GetFile(path)?.GetData();
+
+    /// <summary>
+    /// Gets the VirtualFile object that represents a file at a given path.
+    /// Throws a FileNotFoundException if the file cannot be found.
+    /// </summary>
+    /// <param name="path"></param>
+    /// <returns></returns>
+    public VirtualFile GetFileOrThrow(string path)
+    {
+        var ans = GetFile(path);
+        if (ans == null) throw new FileNotFoundException($"Could not find file {path}");
+        return ans;
+    }
     
     /// <summary>
     /// Gets the VirtualFile object that represents a file at a given path.
@@ -86,6 +119,46 @@ public abstract class VirtualFileSystem
     /// <param name="file"></param>
     /// <returns>true if the file was found, false otherwise</returns>
     public abstract bool TryGetFile(VFSPath path, [MaybeNullWhen(false)] out VirtualFile file);
+
+    public IMemoryOwner<byte> MemoryMapFileOrThrow(string path)
+    {
+        var data = MemoryMapFile(path);
+        if (data == null) throw new FileNotFoundException($"Could not find file {path}");
+        return data;
+    }
+
+    /// <summary>
+    /// Memory map the data of this file.
+    /// </summary>
+    /// <returns></returns>
+    public IMemoryOwner<byte>? MemoryMapFile(string path)
+    {
+        TryMemoryMapFile(path, out var d);
+        return d;
+    }
+    
+    /// <summary>
+    /// Memory map the data of this file.
+    /// </summary>
+    /// <returns></returns>
+    public bool TryMemoryMapFile(string path, [MaybeNullWhen(false)] out IMemoryOwner<byte> data)
+        => TryMemoryMapFile(new VFSPath(path), out data);
+
+    /// <summary>
+    /// Memory map the data of this file.
+    /// </summary>
+    /// <returns></returns>
+    public bool TryMemoryMapFile(VFSPath path, [MaybeNullWhen(false)] out IMemoryOwner<byte> data)
+    {
+        if (!TryGetFile(path, out var f))
+        {
+            data = null;
+            return false;
+        }
+
+        data = f.MemoryMapData();
+        return true;
+    }
 
     /// <summary>
     /// Returns true if a given directory exists
@@ -309,6 +382,15 @@ public abstract class VirtualFileSystem
 
     internal static NotSupportedException ThrowWriteNotSupported() 
         => new("Attempted to write to a read-only file or filesystem.");
+
+    public virtual void Dispose()
+    {
+        GC.SuppressFinalize(this);
+        foreach (var d in disposables)
+        {
+            d.Dispose();
+        }
+    }
 }
 
 public abstract class VirtualDirectory
@@ -410,11 +492,18 @@ public abstract class VirtualDirectory
 public abstract class VirtualFile
 {
     public abstract bool IsReadOnly { get; }
+    
     /// <summary>
     /// Attempt to get the binary data of this file.
     /// </summary>
     /// <returns></returns>
     public abstract Memory<byte> GetData();
+
+    /// <summary>
+    /// Memory map the data of this file.
+    /// </summary>
+    /// <returns></returns>
+    public abstract IMemoryOwner<byte> MemoryMapData();
 
     /// <summary>
     /// Attempt to write binary data to a file.

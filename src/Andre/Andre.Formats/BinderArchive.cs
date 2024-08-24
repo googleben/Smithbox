@@ -7,12 +7,14 @@ using System.IO.MemoryMappedFiles;
 
 namespace Andre.Formats
 {
-    public class BinderArchive
+    public class BinderArchive : IDisposable, IAsyncDisposable
     {
         public static int ThreadsForDecryption = Environment.ProcessorCount > 4 ? Environment.ProcessorCount / 2 : 4;
         
         private BHD5 bhd;
         public FileStream Bdt { get; }
+        
+        public MemoryMappedFile BdtMmf { get; }
         
         public bool BhdWasEncrypted { get; }
 
@@ -95,11 +97,21 @@ namespace Andre.Formats
                 .Select(archive => Path.Combine(gameRoot, archive + (game == Game.DS1 ? ".bhd5" : ".bhd")))
                 .Where(File.Exists);
         
-        public BinderArchive(BHD5 bhd, FileStream bdt, bool wasEncrypted = false)
+        public BinderArchive(BHD5 bhd, FileStream bdt, MemoryMappedFile bdtMmf, bool wasEncrypted = false)
         {
             this.bhd = bhd;
             this.Bdt = bdt;
+            this.BdtMmf = bdtMmf;
             this.BhdWasEncrypted = wasEncrypted;
+        }
+
+        public BinderArchive(BHD5 bhd, FileStream bdt, bool wasEncrypted = false)
+        {
+            this.bhd = bhd;
+            Bdt = bdt;
+            BhdWasEncrypted = wasEncrypted;
+            BdtMmf = MemoryMappedFile.CreateFromFile(bdt, bdt.Name, bdt.Length, MemoryMappedFileAccess.Read,
+                HandleInheritability.None, true);
         }
 
         public static bool IsBhdEncrypted(Memory<byte> bhd)
@@ -141,6 +153,8 @@ namespace Andre.Formats
                 BhdWasEncrypted = true;
             }
             Bdt = File.OpenRead(bdtPath);
+            BdtMmf = MemoryMappedFile.CreateFromFile(Bdt, null, 0, MemoryMappedFileAccess.Read,
+                HandleInheritability.None, true);
         }
 
         public BHD5.FileHeader? TryGetFileFromHash(ulong hash)
@@ -157,5 +171,16 @@ namespace Andre.Formats
         public IEnumerable<BHD5.FileHeader> EnumerateFiles() =>
             Buckets.Select(b => b.AsEnumerable()).Aggregate(Enumerable.Concat);
 
+        public void Dispose()
+        {
+            GC.SuppressFinalize(this);
+            Bdt.Dispose();
+        }
+
+        public async ValueTask DisposeAsync()
+        {
+            GC.SuppressFinalize(this);
+            await Bdt.DisposeAsync();
+        }
     }
 }

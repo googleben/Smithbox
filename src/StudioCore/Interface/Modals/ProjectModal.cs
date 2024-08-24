@@ -269,8 +269,11 @@ public class ProjectModal
                 Smithbox.ProjectHandler.ImportRowNames = true;
 
                 // Only proceed if load is successful
-                if (Smithbox.ProjectHandler.LoadProject(newProject.ProjectJsonPath))
-                    Smithbox.ProjectHandler.IsInitialLoad = false;
+                Smithbox.ProjectHandler.LoadProject(newProject.ProjectJsonPath).ContinueWith((t) =>
+                {
+                    if (t.Result)
+                        Smithbox.ProjectHandler.IsInitialLoad = false;
+                });
             }
         }
     }
