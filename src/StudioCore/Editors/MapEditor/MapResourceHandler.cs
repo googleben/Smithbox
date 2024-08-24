@@ -221,9 +221,9 @@ namespace StudioCore.Editors.MapEditor
 
         public void SetupModelMasks(MapContainer map)
         {
-            foreach (Entity obj in map.Objects)
+            foreach (var obj in map.Objects)
             {
-                if (obj.WrappedObject is IMsbPart mp && mp.ModelName != null && mp.ModelName != "" &&
+                if (obj.WrappedObject is IMsbPart mp && !string.IsNullOrEmpty(mp.ModelName) &&
                     obj.RenderSceneMesh == null)
                 {
                     int[]? masks = null;
@@ -242,7 +242,7 @@ namespace StudioCore.Editors.MapEditor
             List<ResourceDescriptor> BTLs = MapLocator.GetMapBTLs(MapID);
             foreach (ResourceDescriptor btl_ad in BTLs)
             {
-                BTL btl = LoadBTL(btl_ad);
+                var btl = LoadBTL(btl_ad);
                 if (btl != null)
                 {
                     map.LoadBTL(btl_ad, btl);
@@ -250,7 +250,7 @@ namespace StudioCore.Editors.MapEditor
             }
         }
 
-        private BTL LoadBTL(ResourceDescriptor ad)
+        private BTL? LoadBTL(ResourceDescriptor ad)
         {
             try
             {
@@ -258,10 +258,10 @@ namespace StudioCore.Editors.MapEditor
 
                 if (Smithbox.ProjectType == ProjectType.DS2S || Smithbox.ProjectType == ProjectType.DS2)
                 {
-                    var bhdb = Smithbox.FS.ReadFile(ad.AssetPath).Value;
-                    var bdtb = Smithbox.FS.ReadFile(ad.AssetPath[..^3] + "bdt").Value;
+                    var bhdb = Smithbox.FS.ReadFileOrThrow(ad.AssetPath);
+                    var bdtb = Smithbox.FS.ReadFileOrThrow(ad.AssetPath[..^3] + "bdt");
                     using var bdt = BXF4.Read(bhdb, bdtb);
-                    BinderFile file = bdt.Files.Find(f => f.Name.EndsWith("light.btl.dcx"));
+                    var file = bdt.Files.Find(f => f.Name.EndsWith("light.btl.dcx"));
                     if (file == null)
                     {
                         return null;
@@ -271,7 +271,7 @@ namespace StudioCore.Editors.MapEditor
                 }
                 else
                 {
-                    btl = BTL.Read(Smithbox.FS.GetFile(ad.AssetPath).GetData());
+                    btl = BTL.Read(Smithbox.FS.ReadFileOrThrow(ad.AssetPath));
                 }
 
                 return btl;

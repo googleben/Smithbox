@@ -65,7 +65,7 @@ public static class ResourceManager
         return ResourceDatabase;
     }
 
-    private static IResourceHandle InstantiateResource(ResourceType type, string path)
+    private static IResourceHandle? InstantiateResource(ResourceType type, string path)
     {
         switch (type)
         {
@@ -80,7 +80,7 @@ public static class ResourceManager
 
     private static LoadTPFTextureResourceRequest[] LoadTPFResources(LoadTPFResourcesAction action)
     {
-        Tracy.___tracy_c_zone_context ctx =
+        var ctx =
             Tracy.TracyCZoneN(1, $@"LoadTPFResourcesTask::Run {action._virtpathbase}");
 
         // If tpf is null this is a loose file load.
@@ -88,13 +88,13 @@ public static class ResourceManager
         {
             try
             {
-                action._tpf = TPF.Read(Smithbox.FS.GetFile(action._filePath).GetData());
+                action._tpf = TPF.Read(Smithbox.FS.ReadFileOrThrow(action._filePath!));
             }
             catch (Exception e)
             {
                 TaskLogs.AddLog($"Failed to load TPF \"{action._filePath}\": {e.Message}",
                     LogLevel.Warning, TaskLogs.LogPriority.Normal, e);
-                return new LoadTPFTextureResourceRequest[] { };
+                return [];
             }
         }
 
@@ -120,16 +120,12 @@ public static class ResourceManager
             action.ProcessBinder();
             if (!action.PopulateResourcesOnly)
             {
-                var doasync = action.PendingResources.Count() + action.PendingTPFs.Count() > 1;
+                var doasync = action.PendingResources.Count + action.PendingTPFs.Count > 1;
                 var i = 0;
 
                 // PIPELINE: non-TPF files within the binder
-                foreach (Tuple<IResourceLoadPipeline, string, BinderFileHeader> p in action.PendingResources)
+                foreach ((var pipeline, string? virtualPath, var binder) in action.PendingResources)
                 {
-                    var pipeline = p.Item1;
-                    var virtualPath = p.Item2;
-                    var binder = p.Item3;
-
                     Memory<byte> binderData = action.Binder.ReadFile(binder);
 
                     // PIPELINE: create request to load resource from bytes
@@ -224,14 +220,14 @@ public static class ResourceManager
         return src == target;
     }
 
-    public static BinderReader InstantiateBinderReaderForFile(string filePath, ProjectType type)
+    public static BinderReader? InstantiateBinderReaderForFile(string? filePath, ProjectType type)
     {
         if (filePath == null || !Smithbox.FS.FileExists(filePath))
         {
             return null;
         }
 
-        if (type == ProjectType.DES || type == ProjectType.DS1 || type == ProjectType.DS1R)
+        if (type is ProjectType.DES or ProjectType.DS1 or ProjectType.DS1R)
         {
             if (filePath.ToUpper().EndsWith("BHD"))
             {
@@ -434,36 +430,38 @@ public static class ResourceManager
     {
         var scale = Smithbox.GetUIScale();
 
-        if (ActiveJobProgress.Count() > 0)
+        if (ActiveJobProgress.IsEmpty)
         {
-            ImGui.SetNextWindowSize(new Vector2(400, 310) * scale);
-            ImGui.SetNextWindowPos(new Vector2(w - (100 * scale), h - (300 * scale)));
-            if (!ImGui.Begin("Resource Loading Tasks", ref TaskWindowOpen, ImGuiWindowFlags.NoDecoration))
-            {
-                ImGui.End();
-                return;
-            }
+            return;
+        }
 
-            foreach (KeyValuePair<ResourceJob, int> job in ActiveJobProgress)
+        ImGui.SetNextWindowSize(new Vector2(400, 310) * scale);
+        ImGui.SetNextWindowPos(new Vector2(w - (100 * scale), h - (300 * scale)));
+        if (!ImGui.Begin("Resource Loading Tasks", ref TaskWindowOpen, ImGuiWindowFlags.NoDecoration))
+        {
+            ImGui.End();
+            return;
+        }
+
+        foreach (KeyValuePair<ResourceJob, int> job in ActiveJobProgress)
+        {
+            if (!job.Key.Finished)
             {
-                if (!job.Key.Finished)
+                var completed = job.Key.Progress;
+                var size = job.Key.GetEstimateTaskSize();
+                ImGui.Text(job.Key.Name);
+                if (size == 0)
                 {
-                    var completed = job.Key.Progress;
-                    var size = job.Key.GetEstimateTaskSize();
-                    ImGui.Text(job.Key.Name);
-                    if (size == 0)
-                    {
-                        ImGui.ProgressBar(0.0f);
-                    }
-                    else
-                    {
-                        ImGui.ProgressBar(completed / (float)size, new Vector2(386.0f, 20.0f) * scale);
-                    }
+                    ImGui.ProgressBar(0.0f);
+                }
+                else
+                {
+                    ImGui.ProgressBar(completed / (float)size, new Vector2(386.0f, 20.0f) * scale);
                 }
             }
-
-            ImGui.End();
         }
+
+        ImGui.End();
     }
 
     public static void OnGuiDrawResourceList(string menuId)
@@ -552,17 +550,17 @@ public static class ResourceManager
         /// <summary>
         /// Virtual resource path used for this TPF
         /// </summary>
-        public string _virtpathbase = null;
+        public string? _virtpathbase = null;
 
         /// <summary>
         /// TPF container
         /// </summary>
-        public TPF _tpf = null;
+        public TPF? _tpf = null;
 
         /// <summary>
         /// Absolute resource path used for this TPF
         /// </summary>
-        public string _filePath = null;
+        public string? _filePath = null;
 
         /// <summary>
         /// Resource access level
@@ -592,8 +590,8 @@ public static class ResourceManager
         public ResourceJob _job;
         public AccessLevel AccessLevel = AccessLevel.AccessGPUOptimizedOnly;
         public HashSet<string> AssetWhitelist;
-        public BinderReader Binder;
-        public HashSet<int> BinderLoadMask = null;
+        public BinderReader? Binder;
+        public HashSet<int>? BinderLoadMask = null;
         public string BinderVirtualPath;
         public List<Task> LoadingTasks = new();
 
@@ -618,8 +616,7 @@ public static class ResourceManager
             PersistentTPF = isPersistentTPF;
         }
 
-        public void 
-            ProcessBinder()
+        public void ProcessBinder()
         {
             // Read binder
             if (Binder == null)
@@ -636,9 +633,9 @@ public static class ResourceManager
             }
 
             // Iterate through each file in the binder
-            for (var i = 0; i < Binder.Files.Count(); i++)
+            for (var i = 0; i < Binder.Files.Count; i++)
             {
-                BinderFileHeader f = Binder.Files[i];
+                var f = Binder.Files[i];
 
                 // Skip entry if entry ID is not in binder load mask (if defined)
                 if (BinderLoadMask != null && !BinderLoadMask.Contains(i))
@@ -660,7 +657,7 @@ public static class ResourceManager
                     continue;
                 }
 
-                IResourceLoadPipeline pipeline = null;
+                IResourceLoadPipeline? pipeline = null;
 
                 // TPF
                 if (LocatorUtils.IsTPF(curFileBinderPath))

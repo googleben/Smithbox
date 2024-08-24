@@ -122,7 +122,7 @@ public class Entity : ISelectable, IDisposable
     /// The associated render scene mesh for this entity.
     /// </summary>
     [XmlIgnore]
-    public RenderableProxy RenderSceneMesh
+    public RenderableProxy? RenderSceneMesh
     {
         set
         {

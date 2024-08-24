@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 namespace StudioCore.Locators;
 public static class MapLocator
 {
-    public static List<string> FullMapList;
+    public static List<string>? FullMapList;
 
     /// <summary>
     /// Get a MSB asset.
@@ -27,7 +27,7 @@ public static class MapLocator
             return ad;
 
         var l =  Locator.FindMsbForId(mapid, Smithbox.ProjectType.AsAndreGame().Value, Smithbox.FS, writemode);
-        ad.AssetPath = l.Value.AssetPath;
+        ad.AssetPath = l?.AssetPath;
         ad.AssetName = mapid;
         return ad;
     }

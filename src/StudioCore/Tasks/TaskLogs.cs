@@ -41,7 +41,7 @@ public static class TaskLogs
     private static volatile List<LogEntry> _log = new();
     private static volatile HashSet<string> _warningList = new();
 
-    private static volatile LogEntry _lastLogEntry;
+    private static volatile LogEntry? _lastLogEntry;
 
 #if DEBUG
     private static bool _showDebugLogs = true;
@@ -63,8 +63,10 @@ public static class TaskLogs
     /// </summary>
     /// <param name="text">Text to add to log.</param>
     /// <param name="level">Type of entry. Affects text color.</param>
+    /// <param name="priority"></param>
+    /// <param name="ex"></param>
     public static void AddLog(string text, LogLevel level = LogLevel.Information,
-        LogPriority priority = LogPriority.Normal, Exception ex = null)
+        LogPriority priority = LogPriority.Normal, Exception? ex = null)
     {
         if (level == LogLevel.Debug && !_showDebugLogs)
         {
@@ -83,7 +85,7 @@ public static class TaskLogs
                 // Wait until no other threads are using spinlock
                 _spinlock.Enter(ref lockTaken);
 
-                LogEntry lastLog = _log.LastOrDefault();
+                var lastLog = _log.LastOrDefault();
                 if (lastLog != null)
                 {
                     if (lastLog.Message == text)
@@ -268,7 +270,7 @@ public static class TaskLogs
         var mult = 0.0f;
         if (level == null)
         {
-            level = _lastLogEntry.Level;
+            level = _lastLogEntry?.Level;
             mult = _timerColorMult;
         }
 

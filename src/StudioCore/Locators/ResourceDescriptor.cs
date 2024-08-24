@@ -11,7 +11,7 @@ namespace StudioCore.Locators;
 /// </summary>
 public class ResourceDescriptor : IComparable<ResourceDescriptor>
 {
-    public string AssetArchiveVirtualPath;
+    public string? AssetArchiveVirtualPath;
 
     /// <summary>
     ///     Where applicable, the numeric asset ID. Usually applies to chrs, objs, and various map pieces
@@ -21,18 +21,18 @@ public class ResourceDescriptor : IComparable<ResourceDescriptor>
     /// <summary>
     ///     Pretty UI friendly name for an asset. Usually the file name without an extention i.e. c1234
     /// </summary>
-    public string AssetName;
+    public string? AssetName;
 
     /// <summary>
     ///     Absolute path of where the full asset is located. If this asset exists in a mod override directory,
     ///     then this path points to that instead of the base game asset.
     /// </summary>
-    public string AssetPath;
+    public string? AssetPath;
 
     /// <summary>
     ///     Virtual friendly path for this asset to use with the resource manager
     /// </summary>
-    public string AssetVirtualPath;
+    public string? AssetVirtualPath;
 
     public override int GetHashCode()
     {
@@ -45,7 +45,7 @@ public class ResourceDescriptor : IComparable<ResourceDescriptor>
         return base.GetHashCode();
     }
 
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         if (obj is ResourceDescriptor ad)
         {
@@ -59,10 +59,10 @@ public class ResourceDescriptor : IComparable<ResourceDescriptor>
         return base.Equals(obj);
     }
 
-    public int CompareTo(ResourceDescriptor other)
+    public int CompareTo(ResourceDescriptor? other)
     {
         // Use string default CompareTo logic
-        return AssetName.CompareTo(other.AssetName);
+        return string.Compare(AssetName, other?.AssetName);
     }
 
     public bool IsValid()
