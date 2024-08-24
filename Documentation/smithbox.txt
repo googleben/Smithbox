@@ -23,6 +23,13 @@ Behavior Editor:
  - ADD: skeleton HKX editor
  - ADD: collision HKX editor
  
+EMEVD Editor:
+ - ADD: Display EMEVD file as function list -> function commands -> command properties. 
+ - ADD: Add ability to insert/delete/order commands. 
+ - ADD: Add ability to adjust function arguments.
+ - ADD: support for DS2 emevd (direct usefulness over DarkScript, plus simple enough for framework impl)
+ - ADD: quicklink to EMEVD from param field
+ 
 Map Editor: 
  - ADD: .BTAB support
  - ADD: .GRASS support
@@ -44,7 +51,7 @@ Model Editor:  - ADD: FBX Import into loose FLVER
  - ADD: floating text for co-ordinate direction (X, Y, Z)
  - ADD: dummy poly forward/upwards representation
  - ADD: proper handling for the flag fields in the FLVER
- - ADD: GX Item mapping so the byte arrays are more comprehesible
+ - ADD: GX Item mapping so the byte arrays are more comprehesible (https://github.com/JKAnderson/SoulsFormats/issues/14)
  - ADD: render bone connections (use patrol route method)
  
  - FIX: viewport meshes should reflect changes to FLVER meshes (currently initial load meshes are always used)
@@ -60,6 +67,7 @@ Param Editor:
  - ADD: stayparam support for DS3 (requires 'blob' editor with manual definitions)
  - ADD: Able to sort row order manually
  - ADD: make "Use project meta" merge in new entries instead of wholesale replacing (https://github.com/ividyon/WitchyBND/blob/main/WitchyBND/Configuration.cs)
+ - ADD: automatic naming tool: for current param, look for reference fields, name the linked param row with the base name if empty (e.g. Item -> Bullet-> AtkParam)
 
 Text Editor:
  - REWORK: remove the in-built categorization of the FMGs, add as an optional bundling, but internally they should reflect the actual FMG binder structure
@@ -67,6 +75,7 @@ Text Editor:
  - ADD: FMG Generator script creation modal
  - ADD: FMG Generator open script folder (for project)
  - ADD: add modified filter
+ - ADD: context menu in text input: add color (<font color="#31994d">Text</font>) that wraps selected text with the html tag (include detection/removal of tag when selecting existing one too)
  
  - FIX: internal vanilla entry should be preferred over internal dlc01/dlc02 entry due to FMG read preference (vanilla entry overrides dlc1 entry, dlc1 entry overrides dlc2 entry)
  
@@ -80,6 +89,7 @@ Time Act Editor
  - ADD: handling for event groups (currently copied events simply inherit the existing assignment)
  - ADD: Data export/import for TAE/Animation/Event
  - ADD: event graph: use table API to represent each 0.05 frame, each cell is one frame
+ - ADD: quicklink to TimeAct from param
  
  - FIX: TAE a330 + a331 in AC6 are not reading correctly
  - FIX: AC6 TAE doesn't save correctly (TAE implementation needs to be updated)
@@ -95,17 +105,6 @@ Texture Viewer:
  - FIX: Support AC6 Parts (need to change how ResourceManager holds the virtual paths since the AC6 uses the same filename but with different extensions)
  - FIX: Image Preview fails for users when they edit an icon image file and save it incorrectly (as BC3 and not BC7)
  
-Documentation:
- - ADD: finish documenting ER SOTE rows
-
 #--------------------------------------
 # Notes
 #--------------------------------------
-
-EMEVD Editor:
- - ADD: Display EMEVD file as function list -> function commands -> command properties. 
- - ADD: Add ability to insert/delete/order commands. 
- - ADD: Add ability to adjust function arguments.
- - ADD: support for DS2 emevd (direct usefulness over DarkScript, plus simple enough for framework impl)
- 
-

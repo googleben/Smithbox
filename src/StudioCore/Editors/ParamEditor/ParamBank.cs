@@ -262,6 +262,8 @@ public class ParamBank
         {
             var fName = f.Substring(f.LastIndexOf('\\') + 1);
 
+            //TaskLogs.AddLog(fName);
+
             if (CFG.Current.Param_UseProjectMeta && Smithbox.ProjectType != ProjectType.Undefined)
             {
                 var metaDir = ParamLocator.GetParammetaDir();
@@ -460,6 +462,16 @@ public class ParamBank
                 throw new Exception("Param type is unexpectedly null");
             }
 
+            // Skip these for DS1 so the param load is not slowed down by the catching
+            if(Smithbox.ProjectType is ProjectType.DS1 or ProjectType.DS1R)
+            {
+                if(paramName is "m99_ToneCorrectBank" or "m99_ToneMapBank" or "default_ToneCorrectBank")
+                {
+                    TaskLogs.AddLog($"Skipped this param: {paramName}");
+                    continue;
+                }
+            }
+
             PARAMDEF def = _paramdefs[p.ParamType];
             try
             {
@@ -471,19 +483,7 @@ public class ParamBank
                 var name = f.Name.Split("\\").Last();
                 var message = $"Could not apply ParamDef for {name}";
 
-                if (Smithbox.ProjectType == ProjectType.DS1R &&
-                    name is "m99_ToneMapBank.param" or "m99_ToneCorrectBank.param"
-                        or "default_ToneCorrectBank.param")
-                {
-                    // Known cases that don't affect standard modmaking
-                    TaskLogs.AddLog(message,
-                        LogLevel.Warning, TaskLogs.LogPriority.Low);
-                }
-                else
-                {
-                    TaskLogs.AddLog(message,
-                        LogLevel.Warning, TaskLogs.LogPriority.Normal, e);
-                }
+                TaskLogs.AddLog(message, LogLevel.Warning, TaskLogs.LogPriority.Normal, e);
             }
         }
     }
@@ -807,6 +807,13 @@ public class ParamBank
             var lp = Param.Read(Smithbox.FS.GetFile(p).GetData());
             var fname = lp.ParamType;
 
+            // Skip this param since it always fails and catching it slows down the param load
+            if (Smithbox.ProjectType == ProjectType.DS2S || Smithbox.ProjectType == ProjectType.DS2)
+            {
+                if (fname is "GENERATOR_DBG_LOCATION_PARAM")
+                    continue;
+            }
+
             try
             {
                 if (Smithbox.ProjectHandler.CurrentProject.Config.UseLooseParams)
@@ -830,20 +837,7 @@ public class ParamBank
             catch (Exception e)
             {
                 var message = $"Could not apply ParamDef for {fname}";
-                if (Smithbox.ProjectType == ProjectType.DS2S || Smithbox.ProjectType == ProjectType.DS2)
-                {
-                    if (fname is "GENERATOR_DBG_LOCATION_PARAM")
-                    {
-                        // Known cases that don't affect standard modmaking
-                        TaskLogs.AddLog(message,
-                            LogLevel.Warning, TaskLogs.LogPriority.Low);
-                    }
-                }
-                else
-                {
-                    TaskLogs.AddLog(message,
-                        LogLevel.Warning, TaskLogs.LogPriority.Normal, e);
-                }
+                TaskLogs.AddLog(message, LogLevel.Warning, TaskLogs.LogPriority.Normal, e);
             }
         }
 

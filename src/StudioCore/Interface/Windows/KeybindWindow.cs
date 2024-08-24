@@ -199,9 +199,9 @@ public class CommonKeybindTab
                 KeyBindings.Current.CORE_HelpWindow,
                 KeyBindings.Default.CORE_HelpWindow);
 
-            KeyBindings.Current.CORE_KeybindsWindow = InputTracker.KeybindLine(9,
-                KeyBindings.Current.CORE_KeybindsWindow,
-                KeyBindings.Default.CORE_KeybindsWindow);
+            KeyBindings.Current.CORE_KeybindingWindow = InputTracker.KeybindLine(9,
+                KeyBindings.Current.CORE_KeybindingWindow,
+                KeyBindings.Default.CORE_KeybindingWindow);
         }
     }
 }
@@ -620,6 +620,13 @@ public class ParamEditorKeybindTab
             KeyBindings.Current.PARAM_ExportCSV = InputTracker.KeybindLine(10,
                 KeyBindings.Current.PARAM_ExportCSV,
                 KeyBindings.Default.PARAM_ExportCSV);
+        }
+
+        if (ImGui.CollapsingHeader("Row Namer", ImGuiTreeNodeFlags.DefaultOpen))
+        {
+            KeyBindings.Current.PARAM_ApplyRowNamer = InputTracker.KeybindLine(60,
+                KeyBindings.Current.PARAM_ApplyRowNamer,
+                KeyBindings.Default.PARAM_ApplyRowNamer);
         }
 
         if (ImGui.CollapsingHeader("Param Reloader", ImGuiTreeNodeFlags.DefaultOpen))

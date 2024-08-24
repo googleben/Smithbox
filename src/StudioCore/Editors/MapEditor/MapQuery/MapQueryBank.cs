@@ -23,12 +23,22 @@ public class MapQueryBank
     public MapQueryBank(IMapQueryEngine engine) 
     {
         Engine = engine;
+
+        if (Smithbox.ProjectType is ProjectType.Undefined)
+        {
+            MapBankInitialized = true;
+        }
     }
 
     public void OnProjectChanged()
     {
         MapBankInitialized = false;
         MapList = new Dictionary<string, IMsb>();
+
+        if (Smithbox.ProjectType is ProjectType.Undefined)
+        {
+            MapBankInitialized = true;
+        }
     }
 
     public Dictionary<string, IMsb> GetMaps()
@@ -57,18 +67,20 @@ public class MapQueryBank
         {
             var mapDir = $"map/";
 
-
-            foreach (var (_, dir) in fs.GetDirectory(mapDir).EnumerateDirectories())
+            if (fs.TryGetDirectory(mapDir, out var mapVDir))
             {
-                foreach (var fileEntry in dir.EnumerateFileNames())
+                foreach (var (_, dir) in mapVDir.EnumerateDirectories())
                 {
-                    if (fileEntry.Contains(".msb"))
+                    foreach (var fileEntry in dir.EnumerateFileNames())
                     {
-                        var name = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(fileEntry));
-                        ResourceDescriptor ad = MapLocator.GetMapMSB(name);
-                        if (ad.AssetPath != null)
+                        if (fileEntry.Contains(".msb"))
                         {
-                            MapResources.Add(ad);
+                            var name = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(fileEntry));
+                            ResourceDescriptor ad = MapLocator.GetMapMSB(name);
+                            if (ad.AssetPath != null)
+                            {
+                                MapResources.Add(ad);
+                            }
                         }
                     }
                 }
@@ -77,7 +89,6 @@ public class MapQueryBank
         else
         {
             var mapDir = $"map/mapstudio/";
-
             foreach (var entry in fs.GetFileNamesWithExtensions(mapDir, ".msb.dcx"))
             {
                 var name = Path.GetFileNameWithoutExtension(Path.GetFileNameWithoutExtension(entry));

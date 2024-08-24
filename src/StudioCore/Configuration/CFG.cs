@@ -477,6 +477,7 @@ public class CFG
     public bool Param_UseProjectMeta = false;
 
     public bool Param_AdvancedMassedit = false;
+    public bool Param_AllowRowReorder = false;
     public bool Param_AllowFieldReorder = true;
     public bool Param_AlphabeticalParams = true;
     public bool Param_DisableLineWrapping = false;
@@ -635,6 +636,8 @@ public class CFG
     //****************************
     // Settings: EMEVD Editor
     //****************************
+    public bool EmevdEditor_DisplayInstructionCategory = false;
+    public bool EmevdEditor_DisplayInstructionParameterNames = false;
 
     //****************************
     // Settings: Texture Viewer

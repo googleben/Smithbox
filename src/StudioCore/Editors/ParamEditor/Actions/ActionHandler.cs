@@ -18,6 +18,7 @@ using System.Linq;
 using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
+using static SoulsFormats.BHD5;
 
 namespace StudioCore.Editors.ParamEditor.Actions;
 public enum TargetType

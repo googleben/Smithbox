@@ -62,6 +62,9 @@ public class ParamEditorTab
 
             ImGui.Checkbox("Disable row grouping", ref CFG.Current.Param_DisableRowGrouping);
             ImguiUtils.ShowHoverTooltip("Disable the grouping of connected rows in certain params, such as ItemLotParam within the Row View list.");
+
+            ImGui.Checkbox("Allow row reordering", ref CFG.Current.Param_AllowRowReorder);
+            ImguiUtils.ShowHoverTooltip("Allow the row order to be changed by an alternative order as defined within the Paramdex META file.");
         }
 
         // Fields
@@ -188,17 +191,21 @@ public class ParamEditorTab
 
         if (SelectedGameOffsetData != null)
         {
-            if (ImGui.CollapsingHeader("Param Reloader"))
+            // Ignore if no game offsets exist for the project type
+            if (Smithbox.BankHandler.GameOffsets.Offsets.list != null)
             {
-                ImGui.Text("Param Reloader Version");
-                ImguiUtils.ShowHoverTooltip("This should match the executable version you wish to target, otherwise the memory offsets will be incorrect.");
-
-                var index = CFG.Current.SelectedGameOffsetData;
-                string[] options = Smithbox.BankHandler.GameOffsets.Offsets.list.Select(entry => entry.exeVersion).ToArray();
-
-                if (ImGui.Combo("##GameOffsetVersion", ref index, options, options.Length))
+                if (ImGui.CollapsingHeader("Param Reloader"))
                 {
-                    CFG.Current.SelectedGameOffsetData = index;
+                    ImGui.Text("Param Reloader Version");
+                    ImguiUtils.ShowHoverTooltip("This should match the executable version you wish to target, otherwise the memory offsets will be incorrect.");
+
+                    var index = CFG.Current.SelectedGameOffsetData;
+                    string[] options = Smithbox.BankHandler.GameOffsets.Offsets.list.Select(entry => entry.exeVersion).ToArray();
+
+                    if (ImGui.Combo("##GameOffsetVersion", ref index, options, options.Length))
+                    {
+                        CFG.Current.SelectedGameOffsetData = index;
+                    }
                 }
             }
         }

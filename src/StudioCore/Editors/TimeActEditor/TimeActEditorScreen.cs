@@ -1112,15 +1112,13 @@ public class TimeActEditorScreen : EditorScreen
             ActionSubMenu.OnProjectChanged();
         }
 
-        if (AnimationBank.IsLoaded)
-        {
-            AnimationBank.IsLoaded = false;
-            AnimationBank.IsTemplatesLoaded = false;
-            AnimationBank.IsCharacterTimeActsLoaded = false;
-            AnimationBank.IsObjectTimeActsLoaded = false;
+        AnimationBank.IsLoaded = false;
+        AnimationBank.IsTemplatesLoaded = false;
+        AnimationBank.IsCharacterTimeActsLoaded = false;
+        AnimationBank.IsObjectTimeActsLoaded = false;
 
-            AnimationBank.Load();
-        }
+        AnimationBank.Load();
+
         ResetActionManager();
         //_universe.UnloadAll(true);
     }
@@ -1132,12 +1130,12 @@ public class TimeActEditorScreen : EditorScreen
 
         if (AnimationBank.IsLoaded && !AnimationBank.IsSaving)
         {
-            TaskLogs.AddLog("Modified file will now be saved.");
+            TaskLogs.AddLog("File will now be saved.");
             AnimationBank.SaveTimeActTask(SelectionHandler.ContainerInfo, SelectionHandler.ContainerBinder);
         }
         else if (AnimationBank.IsSaving)
         {
-            TaskLogs.AddLog("Modified file is already in the process of being saved.");
+            TaskLogs.AddLog("File is already in the process of being saved.");
         }
     }
 

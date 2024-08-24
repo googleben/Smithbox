@@ -104,10 +104,12 @@ public class TimeActSelectionHandler
         TimeActMultiselect.Reset(false, false, true);
     }
 
-    public void FileContainerChange(ContainerFileInfo info, BinderInfo binderInfo, int index, FileContainerType containerType)
+    public void FileContainerChange(ContainerFileInfo info, BinderInfo binderInfo, int index, FileContainerType containerType, bool changeContext = true)
     {
         CurrentFileContainerType = containerType;
-        CurrentSelectionContext = SelectionContext.File;
+
+        if (changeContext)
+            CurrentSelectionContext = SelectionContext.File;
 
         ContainerIndex = index;
         ContainerKey = info.Name;
@@ -128,6 +130,17 @@ public class TimeActSelectionHandler
         CurrentTimeActEventPropertyIndex = -1;
 
         TimeActMultiselect.Reset(true, true, true);
+
+        // Auto-Select first TimeAct if not empty
+        if(ContainerInfo.InternalFiles.Count > 0)
+        {
+            for(int i = 0; i < ContainerInfo.InternalFiles.Count; i++)
+            {
+                var timeAct = ContainerInfo.InternalFiles[i].TAE;
+                TimeActChange(timeAct, i, false);
+                break;
+            }
+        }
     }
 
     public void ResetOnTimeActChange()
@@ -148,15 +161,15 @@ public class TimeActSelectionHandler
         TimeActMultiselect.Reset(true, true, true);
     }
 
-    public void TimeActChange(TAE entry, int index)
+    public void TimeActChange(TAE entry, int index, bool changeContext = true)
     {
-        CurrentSelectionContext = SelectionContext.TimeAct;
+        if(changeContext)
+            CurrentSelectionContext = SelectionContext.TimeAct;
 
         TimeActMultiselect.TimeActSelection(CurrentTimeActKey, index);
 
         CurrentTimeActKey = index;
         CurrentTimeAct = entry;
-
 
         CurrentTimeActAnimation = null;
         CurrentTemporaryAnimHeader = null;
@@ -171,6 +184,17 @@ public class TimeActSelectionHandler
         TimeActMultiselect.Reset(false, true, true);
 
         TimeActUtils.ApplyTemplate(CurrentTimeAct, CurrentTimeActType);
+
+        // Auto-Select first Animation if not empty
+        if (CurrentTimeAct.Animations.Count > 0)
+        {
+            for (int i = 0; i < CurrentTimeAct.Animations.Count; i++)
+            {
+                var anim = CurrentTimeAct.Animations[i];
+                TimeActAnimationChange(anim, i, false);
+                break;
+            }
+        }
     }
 
     public void ResetOnTimeActAnimationChange()
@@ -188,9 +212,10 @@ public class TimeActSelectionHandler
         TimeActMultiselect.Reset(false, true, true);
     }
 
-    public void TimeActAnimationChange(TAE.Animation entry, int index)
+    public void TimeActAnimationChange(TAE.Animation entry, int index, bool changeContext = true)
     {
-        CurrentSelectionContext = SelectionContext.Animation;
+        if (changeContext)
+            CurrentSelectionContext = SelectionContext.Animation;
 
         TimeActMultiselect.AnimationSelection(CurrentTimeActAnimationIndex, index);
 
@@ -211,6 +236,17 @@ public class TimeActSelectionHandler
         }
 
         TimeActMultiselect.Reset(false, false, true);
+
+        // Auto-Select first Event if not empty
+        if (CurrentTimeActAnimation.Events.Count > 0)
+        {
+            for (int i = 0; i < CurrentTimeActAnimation.Events.Count; i++)
+            {
+                var evt = CurrentTimeActAnimation.Events[i];
+                TimeActEventChange(evt, i, false);
+                break;
+            }
+        }
     }
 
     public void ResetOnTimeActEventChange()
@@ -224,9 +260,10 @@ public class TimeActSelectionHandler
         TimeActMultiselect.Reset(false, false, true);
     }
 
-    public void TimeActEventChange(TAE.Event entry, int index)
+    public void TimeActEventChange(TAE.Event entry, int index, bool changeContext = true)
     {
-        CurrentSelectionContext = SelectionContext.Event;
+        if (changeContext)
+            CurrentSelectionContext = SelectionContext.Event;
 
         TimeActMultiselect.EventSelection(CurrentTimeActEventIndex, index);
 

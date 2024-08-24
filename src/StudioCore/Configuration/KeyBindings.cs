@@ -154,10 +154,10 @@ public class KeyBindings
             "Toggles the visibility of the Help window.",
             Key.F3);
 
-        public KeyBind CORE_KeybindsWindow = new(
+        public KeyBind CORE_KeybindingWindow = new(
             "Keybinds Window",
             "Toggles the visibility of the Keybinds window.",
-            Key.F4);
+            Key.F5);
 
         //-----------------------------
         // Viewport
@@ -240,7 +240,7 @@ public class KeyBindings
 
         // Selection
         public KeyBind VIEWPORT_RenderOutline = new(
-            "Selection Outline", 
+            "Toggle Selection Outline", 
             "Toggles the appearance of the selection outline.",
             Key.Unknown);
 
@@ -693,6 +693,13 @@ public class KeyBindings
             "Export CSV", 
             "Trigger the CSV Export prompt.",
             Key.Unknown);
+
+        // Row Namer
+        public KeyBind PARAM_ApplyRowNamer = new(
+            "Apply Row Namer (Flat)",
+            "Apply the Row Namer to the current row selection, with the Flat configuration.",
+            Key.I,
+            true);
 
         // Param Reloader
         public KeyBind PARAM_ReloadParam = new(

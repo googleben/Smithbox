@@ -170,6 +170,31 @@ public class EditorHandler
         return true;
     }
 
+    private void DisplayTaskStatus()
+    {
+        var status = "";
+
+        if (TaskManager.AnyActiveTasks())
+        {
+            status = status + "Active tasks still on going.\n";
+        }
+
+        if (!MapEditor.MapQueryHandler.Bank.MapBankInitialized)
+        {
+            status = status + "Map Query Search still initializing.\n";
+        }
+
+        if (!MapEditor.MapQueryEditHandler.Bank.MapBankInitialized)
+        {
+            status = status + "Map Query Edit still initializing.\n";
+        }
+
+        if (status != "")
+        {
+            ImguiUtils.ShowHoverTooltip(status);
+        }
+    }
+
     public void HandleEditorSharedBar()
     {
         ImGui.Separator();
@@ -179,6 +204,7 @@ public class EditorHandler
         {
             // New Project
             ImguiUtils.ShowMenuIcon($"{ForkAwesome.File}");
+            DisplayTaskStatus();
             if (ImGui.MenuItem("New Project", "", false, MayChangeProject()))
             {
                 Smithbox.ProjectHandler.ClearProject();
@@ -187,6 +213,7 @@ public class EditorHandler
 
             // Open Project
             ImguiUtils.ShowMenuIcon($"{ForkAwesome.Folder}");
+            DisplayTaskStatus();
             if (ImGui.MenuItem("Open Project", "", false, MayChangeProject()))
             {
                 Smithbox.ProjectHandler.OpenProjectDialog();
@@ -194,6 +221,7 @@ public class EditorHandler
 
             // Recent Projects
             ImguiUtils.ShowMenuIcon($"{ForkAwesome.FolderOpen}");
+            DisplayTaskStatus();
             if (ImGui.BeginMenu("Recent Projects", MayChangeProject() && CFG.Current.RecentProjects.Count > 0))
             {
                 Smithbox.ProjectHandler.DisplayRecentProjects();

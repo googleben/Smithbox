@@ -68,6 +68,11 @@ public class ToolSubMenu
         {
             CFG.Current.Param_PinGroups_ShowOnlyPinnedFields = !CFG.Current.Param_PinGroups_ShowOnlyPinnedFields;
         }
+
+        if (InputTracker.GetKeyDown(KeyBindings.Current.PARAM_ApplyRowNamer))
+        {
+            RowNamer.ApplyRowNamer();
+        }
     }
 
     public void OnProjectChanged()
@@ -134,6 +139,35 @@ public class ToolSubMenu
             {
                 ColorPicker.ShowColorPicker = !ColorPicker.ShowColorPicker;
             }
+
+            ImguiUtils.ShowMenuIcon($"{ForkAwesome.Bars}");
+            if (ImGui.BeginMenu("Editor Mode"))
+            {
+                if (ImGui.MenuItem("Toggle"))
+                {
+                    ParamEditorScreen.EditorMode = !ParamEditorScreen.EditorMode;
+                }
+                ImguiUtils.ShowHoverTooltip("Toggle Editor Mode, allowing you to edit the Param Meta within Smithbox.");
+                ImguiUtils.ShowActiveStatus(ParamEditorScreen.EditorMode);
+
+                if (ImGui.MenuItem("Save Changes"))
+                {
+                    ParamMetaData.SaveAll();
+                    ParamEditorScreen.EditorMode = false;
+                }
+                ImguiUtils.ShowHoverTooltip("Save current Param Meta changes.");
+
+                if (ImGui.MenuItem("Discard Changes"))
+                {
+
+                    ParamEditorScreen.EditorMode = false;
+                }
+                ImguiUtils.ShowHoverTooltip("Discard current Param Meta changes.");
+
+                ImGui.EndMenu();
+            }
+
+            ImGui.Separator();
 
             ImguiUtils.ShowMenuIcon($"{ForkAwesome.Bars}");
             if (ImGui.BeginMenu("Import Row Names"))
@@ -264,6 +298,8 @@ public class ToolSubMenu
                 }
             }
 
+            ImGui.Separator();
+
             ImguiUtils.ShowMenuIcon($"{ForkAwesome.Bars}");
             if (ImGui.MenuItem("Sort Rows"))
             {
@@ -272,41 +308,30 @@ public class ToolSubMenu
                     Handler.SortRowsHandler();
                 }
             }
-            
-            /*
+
+            ImGui.Separator();
+
+
+            // Developer-only actions
+#if DEBUG
             ImguiUtils.ShowMenuIcon($"{ForkAwesome.Bars}");
-            if (ImGui.MenuItem("Check Params for Edits", null, false, !ParamBank.PrimaryBank.IsLoadingParams && !ParamBank.VanillaBank.IsLoadingParams))
+            if (ImGui.MenuItem("Weapon - Deep Row Namer"))
             {
-                ParamBank.RefreshAllParamDiffCaches(true);
+                if (Screen._activeView._selection.ActiveParamExists())
+                {
+                    RowNamer.ApplyWeaponDeepRowNamer();
+                }
             }
-            */
 
             ImguiUtils.ShowMenuIcon($"{ForkAwesome.Bars}");
-            if (ImGui.BeginMenu("Editor Mode"))
+            if (ImGui.MenuItem("Enemy - Deep Row Namer"))
             {
-                if (ImGui.MenuItem("Toggle"))
+                if (Screen._activeView._selection.ActiveParamExists())
                 {
-                    ParamEditorScreen.EditorMode = !ParamEditorScreen.EditorMode;
+                    RowNamer.ApplyEnemyDeepRowNamer();
                 }
-                ImguiUtils.ShowHoverTooltip("Toggle Editor Mode, allowing you to edit the Param Meta within Smithbox.");
-                ImguiUtils.ShowActiveStatus(ParamEditorScreen.EditorMode);
-
-                if (ImGui.MenuItem("Save Changes"))
-                {
-                    ParamMetaData.SaveAll();
-                    ParamEditorScreen.EditorMode = false;
-                }
-                ImguiUtils.ShowHoverTooltip("Save current Param Meta changes.");
-
-                if (ImGui.MenuItem("Discard Changes"))
-                {
-
-                    ParamEditorScreen.EditorMode = false;
-                }
-                ImguiUtils.ShowHoverTooltip("Discard current Param Meta changes.");
-
-                ImGui.EndMenu();
             }
+#endif
 
             ImGui.EndMenu();
         }
