@@ -95,8 +95,13 @@ namespace StudioCore.Editors.FsBrowser.BrowserFs
 
             if (fileName.EndsWith("tpf") || fileName.EndsWith("tpf.dcx"))
                 return new TpfFsEntry(fileName, getDataFunc);
-            if (fileName.EndsWith("flver"))
+            if (fileName.EndsWith("flver") || fileName.EndsWith("flver.dcx") 
+                    || fileName.EndsWith("flv") || fileName.EndsWith("flv.dcx"))
                 return new FlverFsEntry(fileName, getDataFunc);
+            if (fileName.EndsWith("btab") || fileName.EndsWith("btab.dcx"))
+                return new BtabFsEntry(fileName, getDataFunc);
+            if (fileName.EndsWith("btl") || fileName.EndsWith("btl.dcx"))
+                return new BtlFsEntry(fileName, getDataFunc);
             return null;
         }
 

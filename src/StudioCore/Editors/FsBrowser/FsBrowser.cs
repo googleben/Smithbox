@@ -23,6 +23,15 @@ namespace StudioCore.Editors.FsBrowser
 
         private FsEntry? selected = null;
 
+        private static IComparer<FsEntry> fsEntryComparer = Comparer<FsEntry>.Create((a, b) =>
+        {
+            bool aIsVfsDir = a is VirtualFileSystemDirectoryFsEntry;
+            bool bIsVfsDir = b is VirtualFileSystemDirectoryFsEntry;
+            if (aIsVfsDir && !bIsVfsDir) return -1;
+            if (bIsVfsDir && !aIsVfsDir) return 1;
+            return string.Compare(a.Name, b.Name, StringComparison.CurrentCulture);
+        });
+
         public FsBrowser(Sdl2Window window, GraphicsDevice device)
         {
             
@@ -161,9 +170,12 @@ namespace StudioCore.Editors.FsBrowser
                     {
                         ImGui.TreeNodeEx("Loading...", ImGuiTreeNodeFlags.NoTreePushOnOpen | ImGuiTreeNodeFlags.Leaf);
                     }
-                    foreach (var child in e.Children.OrderBy(f => f.Name.ToLower()))
+                    else
                     {
-                        Traverse(child, id);
+                        foreach (var child in e.Children.Order(fsEntryComparer))
+                        {
+                            Traverse(child, id);
+                        }
                     }
                 }
                 if (!flags.HasFlag(ImGuiTreeNodeFlags.NoTreePushOnOpen)) ImGui.TreePop();
@@ -217,4 +229,5 @@ namespace StudioCore.Editors.FsBrowser
             e.onUnload = TryDeselect;
         }
     }
+
 }

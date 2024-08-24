@@ -1,6 +1,7 @@
 ﻿using Andre.IO.VFS;
 using ImGuiNET;
 using Microsoft.Extensions.Logging;
+using StudioCore.Editor;
 using StudioCore.Resource;
 using StudioCore.Tasks;
 using System;
@@ -25,42 +26,19 @@ namespace StudioCore.Editors.FsBrowser.BrowserFs
 
         public Action<FsEntry>? onUnload;
 
-        private BlockingCollection<Action>? tasks;
-
-        private Task? loadingTask = null;
+        private TaskManager.LiveTask? loadingTask = null;
         public bool IsLoading => loadingTask != null;
 
-        //TODO: Replace this with a more general solution for project-wide off-gui tasks
-        public Task LoadAsync()
+        public TaskManager.LiveTask LoadAsync()
         {
             if (loadingTask != null) return loadingTask;
-            var cts = new TaskCompletionSource();
-            loadingTask = cts.Task;
-            if (tasks == null)
-            {
-                tasks = new();
-                var t = new Thread(() =>
+            loadingTask = new TaskManager.LiveTask("FsEntry LoadAsync", TaskManager.RequeueType.WaitThenRequeue, false,
+                () =>
                 {
-                    while (true)
-                    {
-                        try
-                        {
-                            tasks.Take()();
-                        }
-                        catch (Exception e)
-                        {
-                            TaskLogs.AddLog("Error on worker thread", LogLevel.Error, TaskLogs.LogPriority.High, e);
-                        }
-                    }
-                }) { IsBackground = true };
-                t.Start();
-            }
-            tasks.Add(() =>
-            {
-                Load();
-                cts.SetResult();
-                loadingTask = null;
-            });
+                    Load();
+                    loadingTask = null;
+                });
+            TaskManager.Run(loadingTask);
             return loadingTask;
         }
 

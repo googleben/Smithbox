@@ -31,7 +31,7 @@ namespace StudioCore.Editors.FsBrowser.BrowserFs
         private BinderArchive? archive = null;
         private BHD5? bhd = null;
         private BhdDictionary? dictionary = null;
-        private BinderVirtualFileSystem? innerFs = null;
+        private ArchiveBinderVirtualFileSystem? innerFs = null;
         private VirtualFileSystemFsEntry? innerFsEntry = null;
         private bool wasEncrypted = false;
         
@@ -60,13 +60,13 @@ namespace StudioCore.Editors.FsBrowser.BrowserFs
                 bhdData = new(decryptedBhdData);
             }
 
-            dictionary = BinderVirtualFileSystem.GetDictionaryForGame(Smithbox.ProjectType.AsAndreGame().Value);
+            dictionary = ArchiveBinderVirtualFileSystem.GetDictionaryForGame(Smithbox.ProjectType.AsAndreGame().Value);
             bhd = BHD5.Read(bhdData.Value, Smithbox.ProjectType.AsBhdGame().Value);
             if (getBdtStream != null)
             {
                 bdtStream = getBdtStream();
                 archive = new(bhd, bdtStream, wasEncrypted);
-                innerFs = new BinderVirtualFileSystem([archive], dictionary);
+                innerFs = new ArchiveBinderVirtualFileSystem([archive], dictionary);
                 innerFsEntry = new(innerFs, name);
                 innerFsEntry.Load();
             }

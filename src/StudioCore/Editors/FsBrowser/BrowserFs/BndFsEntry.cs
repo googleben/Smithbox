@@ -256,6 +256,17 @@ namespace StudioCore.Editors.FsBrowser.BrowserFs
     public class Bhd4FsEntry : Bxf4FsEntry
     {
         public override bool CanHaveChildren => false;
+        private static byte[] EmptyBdt = "BDF4"u8.ToArray()
+            .Concat(new byte[] { 0, 0, 0, 0, 0, 0, 0, 0 })
+            .Concat(BitConverter.GetBytes(0))
+            .Concat(BitConverter.GetBytes(0x30ul))
+            .Concat("07D7R6"u8.ToArray())
+            .Concat(new byte[] {0, 0})
+            .Concat(BitConverter.GetBytes(0ul))
+            .Concat(BitConverter.GetBytes(0ul))
+            .ToArray();
+
+        private static Memory<byte> EmptyBdtMemory = new Memory<byte>(EmptyBdt);
         public Bhd4FsEntry(string name, Func<Memory<byte>> getBhdData) : base(name, () => new Memory<byte>(), getBhdData) {}
         
         public override void OnGui()
