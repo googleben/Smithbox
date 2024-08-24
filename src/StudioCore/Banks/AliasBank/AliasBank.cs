@@ -16,7 +16,7 @@ namespace StudioCore.Banks.AliasBank;
 /// </summary>
 public class AliasBank
 {
-    public AliasResource Aliases { get; set; }
+    public AliasResource? Aliases { get; set; }
 
     private string TemplateName = "Template.json";
 
@@ -51,7 +51,7 @@ public class AliasBank
     {
         Dictionary<string, AliasReference> Entries = new Dictionary<string, AliasReference>();
 
-        if(Aliases.list != null)
+        if(Aliases?.list != null)
         {
             foreach (var entry in Aliases.list)
             {
@@ -71,13 +71,11 @@ public class AliasBank
 
         if (File.Exists(path))
         {
-            using (var stream = File.OpenRead(path))
-            {
-                newResource = JsonSerializer.Deserialize(stream, AliasResourceSerializationContext.Default.AliasResource);
-            }
+            using var stream = File.OpenRead(path);
+            newResource = JsonSerializer.Deserialize(stream, AliasResourceSerializationContext.Default.AliasResource);
         }
 
-        return newResource;
+        return newResource!;
     }
 
     public void WriteAliasResource(AliasResource targetBank)
@@ -156,7 +154,7 @@ public class AliasBank
 
                     entry.name = refName;
 
-                    if (refTags.Contains(","))
+                    if (refTags.Contains(','))
                     {
                         var newTags = new List<string>();
                         var tagList = refTags.Split(",");
@@ -239,14 +237,14 @@ public class AliasBank
         LoadBank();
     }
 
-    private Dictionary<string, string> enumDict;
+    private Dictionary<string, string>? enumDict;
 
     public Dictionary<string, string> GetEnumDictionary()
     {
         if (enumDict == null)
         {
-            enumDict = new Dictionary<string, string>();
-            foreach (var entry in Aliases.list)
+            enumDict = new();
+            foreach (var entry in Aliases!.list)
             {
                 var name = entry.name;
                 if(name == "")

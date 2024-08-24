@@ -15,9 +15,9 @@ namespace StudioCore.Editors.ParamEditor;
 public static class ParamReferenceUtils
 {
     // Supports: ER, DS3, SDT
-    public static void BonfireWarpParam(string activeParam, Param.Row row, string currentField)
+    public static void BonfireWarpParam(string? activeParam, Param.Row? row, string? currentField)
     {
-        if (!(Smithbox.ProjectType is ProjectType.ER or ProjectType.DS3 or ProjectType.SDT))
+        if (Smithbox.ProjectType is not (ProjectType.ER or ProjectType.DS3 or ProjectType.SDT))
             return;
 
         if (activeParam == null)
@@ -38,7 +38,7 @@ public static class ParamReferenceUtils
 
             if (Smithbox.ProjectType is ProjectType.ER)
             {
-                Param.Cell? c = row?["bonfireEntityId"];
+                var c = row["bonfireEntityId"];
                 entityID = (uint)c.Value.Value;
                 entityID = entityID - 1000; // To get the enemy ID
 
@@ -63,10 +63,9 @@ public static class ParamReferenceUtils
                     sCC = $"0{CC}";
 
                 rowMapId = $"m{sAA}_{sBB}_{sCC}_00";
-            }
-            if (Smithbox.ProjectType is ProjectType.DS3)
+            } else if (Smithbox.ProjectType is ProjectType.DS3)
             {
-                Param.Cell? c = row?["bonfireEntityId"];
+                var c = row["bonfireEntityId"];
                 var value = (int)c.Value.Value;
 
                 entityID = (uint)(int)value;
@@ -74,14 +73,13 @@ public static class ParamReferenceUtils
 
                 var idStr = entityID.ToString();
 
-                string sAA = $"{idStr.Substring(0, 2)}";
-                string sBB = $"{idStr.Substring(2, 2)}";
+                string sAA = $"{idStr[..2]}";
+                string sBB = $"{idStr[2..4]}";
 
                 rowMapId = $"m{sAA}_{sBB}_00_00";
-            }
-            if (Smithbox.ProjectType is ProjectType.SDT)
+            } else if (Smithbox.ProjectType is ProjectType.SDT)
             {
-                Param.Cell? c = row?["bonfireEntityId"];
+                var c = row["bonfireEntityId"];
                 var value = (int)c.Value.Value;
 
                 entityID = (uint)(int)value;
@@ -89,8 +87,8 @@ public static class ParamReferenceUtils
 
                 var idStr = entityID.ToString();
 
-                string sAA = $"{idStr.Substring(0, 2)}";
-                string sBB = $"{idStr.Substring(2, 2)}";
+                string sAA = $"{idStr[..2]}";
+                string sBB = $"{idStr[2..4]}";
 
                 rowMapId = $"m{sAA}_{sBB}_00_00";
             }
@@ -107,7 +105,7 @@ public static class ParamReferenceUtils
             {
                 var width = ImGui.GetColumnWidth();
 
-                if (ImGui.Button($"View in Map", new Vector2(width, 20)))
+                if (ImGui.Button($"View in Map", new(width, 20)))
                 {
                     if (mapId != "")
                     {
@@ -124,9 +122,9 @@ public static class ParamReferenceUtils
     }
 
     // Supports: BB
-    public static void ReturnPointParam(string activeParam, Param.Row row, string currentField)
+    public static void ReturnPointParam(string? activeParam, Param.Row? row, string? currentField)
     {
-        if (!(Smithbox.ProjectType is ProjectType.BB))
+        if (Smithbox.ProjectType is not ProjectType.BB)
             return;
 
         if (activeParam == null)
@@ -145,13 +143,13 @@ public static class ParamReferenceUtils
             var rowMapId = "";
             int entityID = 0;
 
-            Param.Cell? c = row?["returnPointEntityId"];
+            var c = row["returnPointEntityId"];
             entityID = (int)c.Value.Value;
             entityID = entityID - 2000; // To get the enemy ID
 
-            c = row?["areaNo"];
+            c = row["areaNo"];
             short AA = (short)c.Value.Value;
-            c = row?["blockNo"];
+            c = row["blockNo"];
             short BB = (short)c.Value.Value;
 
             string sAA = $"{AA}";
@@ -177,7 +175,7 @@ public static class ParamReferenceUtils
             {
                 var width = ImGui.GetColumnWidth();
 
-                if (ImGui.Button($"View in Map", new Vector2(width, 20)))
+                if (ImGui.Button($"View in Map", new(width, 20)))
                 {
                     if (mapId != "")
                     {
@@ -194,9 +192,9 @@ public static class ParamReferenceUtils
     }
 
     // Supports: ER, DS3, SDT, DS1, DS1R
-    public static void GameAreaParam(string activeParam, Param.Row row, string currentField)
+    public static void GameAreaParam(string? activeParam, Param.Row? row, string? currentField)
     {
-        if (!(Smithbox.ProjectType is ProjectType.ER or ProjectType.DS1 or ProjectType.DS1R or ProjectType.DS3 or ProjectType.SDT or ProjectType.BB))
+        if (Smithbox.ProjectType is not (ProjectType.ER or ProjectType.DS1 or ProjectType.DS1R or ProjectType.DS3 or ProjectType.SDT or ProjectType.BB))
             return;
 
         if (activeParam == null)
@@ -219,11 +217,11 @@ public static class ParamReferenceUtils
 
             if (Smithbox.ProjectType is ProjectType.ER)
             {
-                Param.Cell? c = row?["bossMapAreaNo"];
+                var c = row["bossMapAreaNo"];
                 byte AA = (byte)c.Value.Value;
-                c = row?["bossMapBlockNo"];
+                c = row["bossMapBlockNo"];
                 byte BB = (byte)c.Value.Value;
-                c = row?["bossMapMapNo"];
+                c = row["bossMapMapNo"];
                 byte CC = (byte)c.Value.Value;
 
                 string sAA = $"{AA}";
@@ -247,8 +245,8 @@ public static class ParamReferenceUtils
 
                 if (idStr.Length == 7)
                 {
-                    string sAA = $"{idStr.Substring(0, 2)}";
-                    string sBB = $"{idStr.Substring(2, 2)}";
+                    string sAA = $"{idStr[..2]}";
+                    string sBB = $"{idStr[2..4]}";
 
                     rowMapId = $"m{sAA}_{sBB}_00_00";
                 }
@@ -266,7 +264,7 @@ public static class ParamReferenceUtils
             {
                 var width = ImGui.GetColumnWidth();
 
-                if (ImGui.Button($"View in Map", new Vector2(width, 20)))
+                if (ImGui.Button($"View in Map", new(width, 20)))
                 {
                     if (mapId != "")
                     {
@@ -283,9 +281,9 @@ public static class ParamReferenceUtils
     }
 
     // Supports: ER, AC6
-    public static void GrassTypeParam(string activeParam, Param.Row row, string currentField)
+    public static void GrassTypeParam(string? activeParam, Param.Row? row, string? currentField)
     {
-        if (!(Smithbox.ProjectType is ProjectType.ER or ProjectType.AC6))
+        if (Smithbox.ProjectType is not (ProjectType.ER or ProjectType.AC6))
             return;
 
         if (activeParam == null)
@@ -297,20 +295,20 @@ public static class ParamReferenceUtils
         if (currentField == null)
             return;
 
-        if (activeParam.Contains("GrassTypeParam") && (currentField == "model0Name" || currentField == "model1Name" || currentField == "simpleModelName") )
+        if (activeParam.Contains("GrassTypeParam") && currentField is "model0Name" or "model1Name" or "simpleModelName" )
         {
-            Param.Cell? c = row?["model0Name"];
+            var c = row["model0Name"];
             string modelId1 = (string)c.Value.Value;
 
             string modelId2 = "";
             if (Smithbox.ProjectType is ProjectType.ER)
             {
-                c = row?["model1Name"];
+                c = row["model1Name"];
                 modelId2 = (string)c.Value.Value;
             }
             if (Smithbox.ProjectType is ProjectType.AC6)
             {
-                c = row?["simpleModelName"];
+                c = row["simpleModelName"];
                 modelId2 = (string)c.Value.Value;
             }
 
@@ -325,9 +323,9 @@ public static class ParamReferenceUtils
                 ImguiUtils.ShowHoverTooltip("View this model in the Model Editor, loading it automatically.");
             }
 
-            if ((currentField == "model1Name" || currentField == "simpleModelName") && modelId2 != "")
+            if (currentField is "model1Name" or "simpleModelName" && modelId2 != "")
             {
-                if (ImGui.Button($"View Model", new Vector2(width, 20)))
+                if (ImGui.Button($"View Model", new(width, 20)))
                 {
                     EditorCommandQueue.AddCommand($"model/load/{modelId2}/Asset");
                 }
@@ -336,12 +334,12 @@ public static class ParamReferenceUtils
         }
     }
 
-    private static List<string> AssetList;
+    private static List<string>? AssetList;
 
     // Supports: ER, AC6
-    public static void AssetGeometryParam(string activeParam, Param.Row row, string currentField)
+    public static void AssetGeometryParam(string? activeParam, Param.Row? row, string? currentField)
     {
-        if (!(Smithbox.ProjectType is ProjectType.ER or ProjectType.AC6))
+        if (Smithbox.ProjectType is not (ProjectType.ER or ProjectType.AC6))
             return;
 
         if (activeParam == null)
@@ -366,7 +364,7 @@ public static class ParamReferenceUtils
             {
                 var aliasName = AliasUtils.GetAssetAlias(assetID.ToLower());
 
-                if (ImGui.Button($"View Model: {assetID}", new Vector2(width, 20)))
+                if (ImGui.Button($"View Model: {assetID}", new(width, 20)))
                 {
                     EditorCommandQueue.AddCommand($"model/load/{assetID}/Asset");
                 }
@@ -383,41 +381,42 @@ public static class ParamReferenceUtils
         string id = rowID.ToString();
         if (id.Length > 3)
         {
-            string assetNum = id.Substring(id.Length - 3, 3);
+            string assetNum = id[^3..];
 
             if(id.Length == 4)
             {
-                string assetCategoryNum = id.Substring(0, 1);
+                string assetCategoryNum = id[..1];
                 assetID = $"AEG00{assetCategoryNum}_{assetNum}";
             }
             if (id.Length == 5)
             {
-                string assetCategoryNum = id.Substring(0, 2);
+                string assetCategoryNum = id[..2];
                 assetID = $"AEG0{assetCategoryNum}_{assetNum}";
             }
             if (id.Length == 6)
             {
-                string assetCategoryNum = id.Substring(0, 3);
+                string assetCategoryNum = id[..3];
                 assetID = $"AEG{assetCategoryNum}_{assetNum}";
             }
         }
         else
         {
-            if (id.Length == 1)
-                assetID = $"AEG000_00{id}";
-            if (id.Length == 2)
-                assetID = $"AEG000_0{id}";
-            if (id.Length == 3)
-                assetID = $"AEG000_{id}";
+            assetID = id.Length switch
+            {
+                1 => $"AEG000_00{id}",
+                2 => $"AEG000_0{id}",
+                3 => $"AEG000_{id}",
+                _ => assetID
+            };
         }
 
         return assetID;
     }
 
     // Supports: ER
-    public static void BuddyStoneParam(string activeParam, Param.Row row, string currentField)
+    public static void BuddyStoneParam(string? activeParam, Param.Row? row, string? currentField)
     {
-        if (!(Smithbox.ProjectType is ProjectType.ER))
+        if (Smithbox.ProjectType is not ProjectType.ER)
             return;
         
         if (activeParam == null)
@@ -445,14 +444,14 @@ public static class ParamReferenceUtils
             // Legacy Dungeon
             if (rowID.Length == 8)
             {
-                AA = $"{rowID.Substring(0, 2)}";
-                BB = $"{rowID.Substring(2, 2)}";
-                CC = $"{rowID.Substring(4, 1)}0";
+                AA = $"{rowID[..2]}";
+                BB = $"{rowID[2..4]}";
+                CC = $"{rowID[4..5]}0";
             }
             // Open-world Tile
             else if (rowID.Length == 10)
             {
-                AA = $"{rowID.Substring(0, 2)}";
+                AA = $"{rowID[..2]}";
 
                 if (AA == "10")
                     AA = "60";
@@ -460,8 +459,8 @@ public static class ParamReferenceUtils
                 if (AA == "20")
                     AA = "61";
 
-                BB = $"{rowID.Substring(2, 2)}";
-                CC = $"{rowID.Substring(4, 2)}";
+                BB = $"{rowID[2..4]}";
+                CC = $"{rowID[4..6]}";
             }
             else
             {
@@ -486,7 +485,7 @@ public static class ParamReferenceUtils
             {
                 var width = ImGui.GetColumnWidth();
 
-                if (ImGui.Button($"View in Map", new Vector2(width, 20)))
+                if (ImGui.Button($"View in Map", new(width, 20)))
                 {
                     if (mapId != "")
                     {
@@ -503,9 +502,9 @@ public static class ParamReferenceUtils
     }
 
     // Supports: AC6, ER, DS3
-    public static void BulletParam(string activeParam, Param.Row row, string currentField)
+    public static void BulletParam(string? activeParam, Param.Row? row, string? currentField)
     {
-        if (!(Smithbox.ProjectType is ProjectType.ER or ProjectType.DS3 or ProjectType.AC6))
+        if (Smithbox.ProjectType is not (ProjectType.ER or ProjectType.DS3 or ProjectType.AC6))
             return;
 
         if (activeParam == null)
@@ -519,24 +518,21 @@ public static class ParamReferenceUtils
 
         if (activeParam.Contains("Bullet") || activeParam.Contains("Bullet_Npc"))
         {
-            if ((currentField == "assetNo_Hit" || currentField == "assetCreationAssetId"))
+            if (currentField is "assetNo_Hit" or "assetCreationAssetId")
             {
-                Param.Cell? c = null;
-                if (Smithbox.ProjectType is ProjectType.AC6)
+                var c = Smithbox.ProjectType switch
                 {
-                    c = row?["assetCreationAssetId"];
-                }
-                if (Smithbox.ProjectType is ProjectType.DS3 or ProjectType.ER)
-                {
-                    c = row?["assetNo_Hit"];
-                }
+                    ProjectType.AC6 => row["assetCreationAssetId"],
+                    ProjectType.DS3 or ProjectType.ER => row["assetNo_Hit"],
+                    _ => null
+                };
 
                 if (c == null)
                     return;
 
                 int modelValue = (int)c.Value.Value;
 
-                if (modelValue <= 0 || modelValue > 999999)
+                if (modelValue is <= 0 or > 999999)
                     return;
 
                 string modelId = modelValue.ToString();
@@ -549,85 +545,57 @@ public static class ParamReferenceUtils
                 {
                     if (modelId.Length == 6)
                     {
-                        category = modelId.Substring(0, 3);
-                        modelName = modelId.Substring(3, 3);
+                        category = modelId[..3];
+                        modelName = modelId[3..6];
                     }
                     else if (modelId.Length == 5)
                     {
-                        category = modelId.Substring(0, 2);
-                        modelName = modelId.Substring(2, 3);
+                        category = modelId[..2];
+                        modelName = modelId[2..5];
                     }
                     else if (modelId.Length == 4)
                     {
-                        category = modelId.Substring(0, 1);
-                        modelName = modelId.Substring(1, 3);
+                        category = modelId[..1];
+                        modelName = modelId[1..4];
                     }
 
-                    var categoryString = "";
-                    var idString = "";
-
-                    if (category.Length == 3)
+                    var categoryString = category.Length switch
                     {
-                        categoryString = $"{category}";
-                    }
-                    else if (category.Length == 2)
+                        3 => $"{category}",
+                        2 => $"0{category}",
+                        1 => $"00{category}",
+                        _ => ""
+                    };
+                    var idString = modelName.Length switch
                     {
-                        categoryString = $"0{category}";
-                    }
-                    else if (modelId.Length == 1)
-                    {
-                        categoryString = $"00{category}";
-                    }
-
-                    if (modelName.Length == 3)
-                    {
-                        idString = $"{modelName}";
-                    }
-                    else if (modelName.Length == 2)
-                    {
-                        idString = $"0{modelName}";
-                    }
-                    else if (modelName.Length == 1)
-                    {
-                        idString = $"00{modelName}";
-                    }
+                        3 => $"{modelName}",
+                        2 => $"0{modelName}",
+                        1 => $"00{modelName}",
+                        _ => ""
+                    };
 
                     modelString = $"aeg{categoryString}_{idString}";
                 }
                 // DS3
                 else
                 {
-                    if (modelId.Length == 6)
+                    modelString = modelId.Length switch
                     {
-                        modelString = $"o{modelId}";
-                    }
-                    else if (modelId.Length == 5)
-                    {
-                        modelString = $"o0{modelId}";
-                    }
-                    else if (modelId.Length == 4)
-                    {
-                        modelString = $"o00{modelId}";
-                    }
-                    else if (modelId.Length == 3)
-                    {
-                        modelString = $"o000{modelId}";
-                    }
-                    else if (modelId.Length == 2)
-                    {
-                        modelString = $"o0000{modelId}";
-                    }
-                    else if (modelId.Length == 1)
-                    {
-                        modelString = $"o00000{modelId}";
-                    }
+                        6 => $"o{modelId}",
+                        5 => $"o0{modelId}",
+                        4 => $"o00{modelId}",
+                        3 => $"o000{modelId}",
+                        2 => $"o0000{modelId}",
+                        1 => $"o00000{modelId}",
+                        _ => modelString
+                    };
                 }
 
                 var width = ImGui.GetColumnWidth();
 
-                if (currentField == "assetNo_Hit" || currentField == "assetCreationAssetId")
+                if (currentField is "assetNo_Hit" or "assetCreationAssetId")
                 {
-                    if (ImGui.Button($"View Model", new Vector2(width, 20)))
+                    if (ImGui.Button($"View Model", new(width, 20)))
                     {
                         EditorCommandQueue.AddCommand($"model/load/{modelString}/Asset");
                     }
@@ -637,16 +605,16 @@ public static class ParamReferenceUtils
         }
     }
 
-    public static string CurrentMapID;
-    public static MSB1 CurrentPeekMap_DS1;
-    public static MSB3 CurrentPeekMap_BB;
-    public static MSB3 CurrentPeekMap_DS3;
-    public static MSBS CurrentPeekMap_SDT;
-    public static MSBE CurrentPeekMap_ER;
-    public static MSB_AC6 CurrentPeekMap_AC6;
+    public static string? CurrentMapID;
+    public static MSB1? CurrentPeekMap_DS1;
+    public static MSB3? CurrentPeekMap_BB;
+    public static MSB3? CurrentPeekMap_DS3;
+    public static MSBS? CurrentPeekMap_SDT;
+    public static MSBE? CurrentPeekMap_ER;
+    public static MSB_AC6? CurrentPeekMap_AC6;
 
     // Supports: DS1, DS3, SDT, ER, AC6
-    public static void ItemLotParam(string activeParam, Param.Row row, string currentField)
+    public static void ItemLotParam(string? activeParam, Param.Row? row, string? currentField)
     {
         if (Smithbox.ProjectType is ProjectType.DS1 or ProjectType.DS1R)
         {
@@ -674,7 +642,7 @@ public static class ParamReferenceUtils
         }
     }
 
-    private static void ItemLotParam_Button(string mapId, string AssetName)
+    private static void ItemLotParam_Button(string mapId, string assetName)
     {
         var width = ImGui.GetColumnWidth();
 
@@ -684,15 +652,15 @@ public static class ParamReferenceUtils
             {
                 EditorCommandQueue.AddCommand($"map/load/{mapId}");
             }
-            if (AssetName != "")
+            if (assetName != "")
             {
-                EditorCommandQueue.AddCommand($"map/select/{mapId}/{AssetName}");
+                EditorCommandQueue.AddCommand($"map/select/{mapId}/{assetName}");
             }
         }
         ImguiUtils.ShowHoverTooltip("Loads the map and selects the asset that holds this treasure.");
     }
 
-    public static void ItemLotParam_DS1(string activeParam, Param.Row row, string currentField)
+    public static void ItemLotParam_DS1(string? activeParam, Param.Row? row, string? currentField)
     {
         if (activeParam == null)
             return;
@@ -715,8 +683,8 @@ public static class ParamReferenceUtils
 
             if (rowID.Length >= 7)
             {
-                AA = $"{rowID.Substring(0, 2)}";
-                BB = $"{rowID.Substring(2, 2)}";
+                AA = $"{rowID[..2]}";
+                BB = $"{rowID[2..4]}";
             }
 
             if (AA == "" || BB == "")
@@ -742,32 +710,32 @@ public static class ParamReferenceUtils
                 {
                     CurrentMapID = rowMapId;
                     var mapPath = MapLocator.GetMapMSB(rowMapId);
-                    CurrentPeekMap_DS1 = MSB1.Read(Smithbox.FS.GetFile(mapPath.AssetPath).GetData());
+                    CurrentPeekMap_DS1 = Smithbox.FS.ReadSoulsFile<MSB1>(mapPath.AssetPath!);
                 }
 
                 if (CurrentPeekMap_DS1 == null)
                     return;
 
-                string AssetName = null;
+                string? assetName = null;
 
                 foreach (var entry in CurrentPeekMap_DS1.Events.Treasures)
                 {
                     if (entry.ItemLots[0] == row.ID)
                     {
-                        AssetName = entry.TreasurePartName;
+                        assetName = entry.TreasurePartName;
                         break;
                     }
                 }
 
-                if (AssetName == null)
+                if (assetName == null)
                     return;
 
-                ItemLotParam_Button(mapId, AssetName);
+                ItemLotParam_Button(mapId, assetName);
             }
         }
     }
 
-    public static void ItemLotParam_BB(string activeParam, Param.Row row, string currentField)
+    public static void ItemLotParam_BB(string? activeParam, Param.Row? row, string? currentField)
     {
         if (activeParam == null)
             return;
@@ -791,15 +759,15 @@ public static class ParamReferenceUtils
 
             if (rowID.Length == 7)
             {
-                AA = $"{rowID.Substring(0, 2)}";
-                BB = $"{rowID.Substring(2, 2)}";
+                AA = $"{rowID[..2]}";
+                BB = $"{rowID[2..4]}";
             }
 
             // NG+ lots
             if (rowID.Length == 9)
             {
-                AA = $"{rowID.Substring(2, 2)}";
-                BB = $"{rowID.Substring(4, 2)}";
+                AA = $"{rowID[2..4]}";
+                BB = $"{rowID[4..6]}";
                 isNGPlusLot = true;
             }
 
@@ -826,13 +794,13 @@ public static class ParamReferenceUtils
                 {
                     CurrentMapID = rowMapId;
                     var mapPath = MapLocator.GetMapMSB(rowMapId);
-                    CurrentPeekMap_BB = MSB3.Read(mapPath.AssetPath);
+                    CurrentPeekMap_BB = Smithbox.FS.ReadSoulsFile<MSB3>(mapPath.AssetPath);
                 }
 
                 if (CurrentPeekMap_BB == null)
                     return;
 
-                string AssetName = null;
+                string? AssetName = null;
 
                 foreach (var entry in CurrentPeekMap_BB.Events.Treasures)
                 {
@@ -858,7 +826,7 @@ public static class ParamReferenceUtils
         }
     }
 
-    public static void ItemLotParam_DS3(string activeParam, Param.Row row, string currentField)
+    public static void ItemLotParam_DS3(string? activeParam, Param.Row? row, string? currentField)
     {
         if (activeParam == null)
             return;
@@ -882,15 +850,15 @@ public static class ParamReferenceUtils
 
             if (rowID.Length == 7)
             {
-                AA = $"{rowID.Substring(0, 2)}";
-                BB = $"{rowID.Substring(2, 2)}";
+                AA = $"{rowID[..2]}";
+                BB = $"{rowID[2..4]}";
             }
 
             // NG+ lots
             if (rowID.Length == 9)
             {
-                AA = $"{rowID.Substring(2, 2)}";
-                BB = $"{rowID.Substring(4, 2)}";
+                AA = $"{rowID[2..4]}";
+                BB = $"{rowID[4..6]}";
                 isNGPlusLot = true;
             }
 
@@ -917,13 +885,13 @@ public static class ParamReferenceUtils
                 {
                     CurrentMapID = rowMapId;
                     var mapPath = MapLocator.GetMapMSB(rowMapId);
-                    CurrentPeekMap_DS3 = MSB3.Read(Smithbox.FS.GetFile(mapPath.AssetPath).GetData());
+                    CurrentPeekMap_DS3 = Smithbox.FS.ReadSoulsFile<MSB3>(mapPath.AssetPath);
                 }
 
                 if (CurrentPeekMap_DS3 == null)
                     return;
 
-                string AssetName = null;
+                string? AssetName = null;
 
                 foreach (var entry in CurrentPeekMap_DS3.Events.Treasures)
                 {
@@ -949,7 +917,7 @@ public static class ParamReferenceUtils
         }
     }
 
-    public static void ItemLotParam_SDT(string activeParam, Param.Row row, string currentField)
+    public static void ItemLotParam_SDT(string? activeParam, Param.Row? row, string? currentField)
     {
         if (activeParam == null)
             return;
@@ -972,8 +940,8 @@ public static class ParamReferenceUtils
 
             if (rowID.Length >= 7)
             {
-                AA = $"{rowID.Substring(0, 2)}";
-                BB = $"{rowID.Substring(2, 2)}";
+                AA = $"{rowID[..2]}";
+                BB = $"{rowID[2..4]}";
             }
 
             if (AA == "" || BB == "")
@@ -999,13 +967,13 @@ public static class ParamReferenceUtils
                 {
                     CurrentMapID = rowMapId;
                     var mapPath = MapLocator.GetMapMSB(rowMapId);
-                    CurrentPeekMap_SDT = MSBS.Read(Smithbox.FS.GetFile(mapPath.AssetPath).GetData());
+                    CurrentPeekMap_SDT = Smithbox.FS.ReadSoulsFile<MSBS>(mapPath.AssetPath);
                 }
 
                 if (CurrentPeekMap_SDT == null)
                     return;
 
-                string AssetName = null;
+                string? AssetName = null;
 
                 foreach (var entry in CurrentPeekMap_SDT.Events.Treasures)
                 {
@@ -1024,7 +992,7 @@ public static class ParamReferenceUtils
         }
     }
 
-    public static void ItemLotParam_ER(string activeParam, Param.Row row, string currentField)
+    public static void ItemLotParam_ER(string? activeParam, Param.Row? row, string? currentField)
     {
         if (activeParam == null)
             return;
@@ -1049,16 +1017,16 @@ public static class ParamReferenceUtils
             // Legacy Dungeon
             if (rowID.Length == 8)
             {
-                AA = $"{rowID.Substring(0, 2)}";
-                BB = $"{rowID.Substring(2, 2)}";
-                CC = $"{rowID.Substring(4, 1)}0";
+                AA = $"{rowID[..2]}";
+                BB = $"{rowID[2..4]}";
+                CC = $"{rowID[4..5]}0";
             }
             // Open-world Tile
             else if (rowID.Length >= 8)
             {
-                AA = $"{rowID.Substring(0, 2)}";
-                BB = $"{rowID.Substring(2, 2)}";
-                CC = $"{rowID.Substring(4, 2)}";
+                AA = $"{rowID[..2]}";
+                BB = $"{rowID[2..4]}";
+                CC = $"{rowID[4..6]}";
             }
 
             if (AA == "" || BB == "" || CC == "")
@@ -1080,13 +1048,13 @@ public static class ParamReferenceUtils
                 {
                     CurrentMapID = rowMapId;
                     var mapPath = MapLocator.GetMapMSB(rowMapId);
-                    CurrentPeekMap_ER = MSBE.Read(Smithbox.FS.GetFile(mapPath.AssetPath).GetData());
+                    CurrentPeekMap_ER = Smithbox.FS.ReadSoulsFile<MSBE>(mapPath.AssetPath);
                 }
 
                 if (CurrentPeekMap_ER == null)
                     return;
 
-                string AssetName = null;
+                string? AssetName = null;
 
                 foreach (var entry in CurrentPeekMap_ER.Events.Treasures)
                 {
@@ -1105,7 +1073,7 @@ public static class ParamReferenceUtils
         }
     }
 
-    public static void ItemLotParam_AC6(string activeParam, Param.Row row, string currentField)
+    public static void ItemLotParam_AC6(string? activeParam, Param.Row? row, string? currentField)
     {
         if (activeParam == null)
             return;
@@ -1130,8 +1098,8 @@ public static class ParamReferenceUtils
             // 21 0460 3220
             if (rowID.Length >= 10)
             {
-                BB = $"{rowID.Substring(2, 2)}";
-                CC = $"{rowID.Substring(4, 2)}";
+                BB = $"{rowID[2..4]}";
+                CC = $"{rowID[4..6]}";
             }
 
             if (AA == "" || BB == "" || CC == "")
@@ -1153,13 +1121,13 @@ public static class ParamReferenceUtils
                 {
                     CurrentMapID = rowMapId;
                     var mapPath = MapLocator.GetMapMSB(rowMapId);
-                    CurrentPeekMap_AC6 = MSB_AC6.Read(Smithbox.FS.GetFile(mapPath.AssetPath).GetData());
+                    CurrentPeekMap_AC6 = Smithbox.FS.ReadSoulsFile<MSB_AC6>(mapPath.AssetPath);
                 }
 
                 if (CurrentPeekMap_AC6 == null)
                     return;
 
-                string AssetName = null;
+                string? AssetName = null;
 
                 foreach (var entry in CurrentPeekMap_AC6.Events.Treasures)
                 {
@@ -1178,7 +1146,7 @@ public static class ParamReferenceUtils
         }
     }
 
-    public static void ColorPicker(string activeParam, Param.Row row, string currentField)
+    public static void ColorPicker(string? activeParam, Param.Row? row, string? currentField)
     {
         if (!CFG.Current.Param_ShowColorPreview)
             return;
@@ -1213,10 +1181,9 @@ public static class ParamReferenceUtils
 
         if(proceed)
         {
-            List<string> FieldNames = new List<string>();
-            FieldNames = fields.Split(",").ToList();
+            var fieldNames = fields.Split(",");
 
-            DisplayColorPicker(row, name, FieldNames[0], FieldNames[1], FieldNames[2]);
+            DisplayColorPicker(row, name, fieldNames[0], fieldNames[1], fieldNames[2]);
         }
     }
 
