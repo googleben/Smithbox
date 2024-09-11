@@ -64,14 +64,7 @@ namespace StudioCore.Resource
             }
             else
             {
-                var r = Refs.DecrementAndGet();
-                if (r == 0)
-                {
-                    isValid = false;
-
-                    if (Value is IDisposable d) 
-                        d.Dispose();
-                }
+                Dispose();
             }
         }
     }

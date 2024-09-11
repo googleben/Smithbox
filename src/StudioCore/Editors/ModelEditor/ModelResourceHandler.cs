@@ -690,7 +690,7 @@ namespace StudioCore.Editors.ModelEditor
             // Backup container file
             File.Copy(info.ModBinderPath, $@"{info.ModBinderPath}.bak", true);
 
-            using (IBinder binder = BND3.Read(DCX.Decompress(info.ModBinderPath)))
+            using (IBinder binder = BND3.Read(info.ModBinderPath))
             {
                 foreach (var file in binder.Files)
                 {
@@ -716,7 +716,7 @@ namespace StudioCore.Editors.ModelEditor
                 {
                     case ProjectType.DS1:
                     case ProjectType.DS1R:
-                        fileBytes = writeBinder.Write(DCX.Type.DCX_DFLT_10000_24_9);
+                        fileBytes = writeBinder.Write();
                         break;
                     default:
                         TaskLogs.AddLog($"Invalid ProjectType during Model Editor Save");

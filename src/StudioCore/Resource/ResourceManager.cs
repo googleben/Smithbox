@@ -171,7 +171,7 @@ public static class ResourceManager
                         TaskLogs.AddLog($"Failed to load TPF \"{tpfName}\"", LogLevel.Warning, TaskLogs.LogPriority.Normal, e);
                         i--;
                     }
-
+                    binder.Dispose();
                 }
             }
         }
@@ -180,16 +180,8 @@ public static class ResourceManager
             TaskLogs.AddLog($"Failed to load binder \"{action.BinderVirtualPath}\"",
                 LogLevel.Warning, TaskLogs.LogPriority.Normal, e);
         }
-
-        // We always want to dispose when using the Model Editor (so we can save the container), so we ignore the refcount logic
-        if(Smithbox.EditorHandler.FocusedEditor is ModelEditorScreen)
-        {
-            action.Binder.Dispose(true);
-        }
-        else
-        {
-            action.Binder.Dispose();
-        }
+        
+        action.Binder.Dispose();
         action.PendingResources.Clear();
         action.Binder = null;
     }
@@ -660,6 +652,7 @@ public static class ResourceManager
                 // Skip entry if entry ID is not in binder load mask (if defined)
                 if (BinderLoadMask != null && !BinderLoadMask.Contains(i))
                 {
+                    f.Dispose();
                     continue;
                 }
 
@@ -673,6 +666,7 @@ public static class ResourceManager
                 // Skip entry if entry Path is not in AssetWhitelist
                 if (AssetWhitelist != null && !AssetWhitelist.Contains(curFileBinderPath))
                 {
+                    f.Dispose();
                     continue;
                 }
 
@@ -744,6 +738,10 @@ public static class ResourceManager
                     {
 
                         PendingResources.Add((pipeline, curFileBinderPath, (RefCount<BinderFileHeader>)f).ToTuple());
+                    }
+                    else
+                    {
+                        f.Dispose();
                     }
                 }
             }
